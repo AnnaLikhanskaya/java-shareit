@@ -26,7 +26,7 @@ public class UserStorageImpl implements UserStorage {
 
     @Override
     public User getUserById(Long id) {
-        checkUserAvailability("Найти", id);
+        checkUserAvailability("найти", id);
         log.info("Получен запрос на вывод пользователя по id");
         return users.get(id);
     }
@@ -43,7 +43,7 @@ public class UserStorageImpl implements UserStorage {
 
     @Override
     public User updateUser(User user) {
-        checkUserAvailability("Изменить", user.getId());
+        checkUserAvailability("изменить", user.getId());
         User updateUser = users.get(user.getId());
         String email = updateUser.getEmail();
         User updateEmail = usersEmail.get(email);
@@ -63,7 +63,7 @@ public class UserStorageImpl implements UserStorage {
 
     @Override
     public void deleteUser(Long id) {
-        checkUserAvailability("Удалить", id);
+        checkUserAvailability("удалить", id);
         usersEmail.remove(users.get(id).getEmail());
         users.remove(id);
         log.info("Получен запрос на удаление пользователя");
@@ -71,7 +71,7 @@ public class UserStorageImpl implements UserStorage {
 
     @Override
     public void checkUserAvailability(String operation, Long id) {
-        String massage = String.format("Alarm %s. Пользователь отсутствует!", operation);
+        String massage = String.format("Невозможно %s. Пользователь отсутствует!", operation);
         if (!users.containsKey(id)) {
             throw new NotExsistObject(massage);
         }

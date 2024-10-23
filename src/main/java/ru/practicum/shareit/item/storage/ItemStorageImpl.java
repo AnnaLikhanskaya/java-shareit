@@ -31,8 +31,8 @@ public class ItemStorageImpl implements ItemStorage {
     public List<Item> getItemByText(String text) {
         log.info("Получен запрос на поиск вещи по названию или описанию");
         return items.values().stream()
-                .filter(item -> mergeNameAndDesc(item.getId()).lastIndexOf(text.toLowerCase()) > -1)
                 .filter(Item::getAvailable)
+                .filter(item -> mergeNameAndDesc(item.getId()).toLowerCase().contains(text.toLowerCase()))
                 .collect(Collectors.toList());
     }
 
@@ -73,11 +73,12 @@ public class ItemStorageImpl implements ItemStorage {
         return id++;
     }
 
-    private void checkAvailability(String operation, long id) {
-        String massage = String.format("Alarm %s. Вещь не нвйдена!", operation);
+    private Item checkAvailability(String operation, long id) {
+        String massage = String.format("Невозможно %s. Вещь не найдена!", operation);
         if (!items.containsKey(id)) {
             throw new NotExsistObject(massage);
         }
+        return items.get(id);
     }
 
     private void checkOwner(long itemId, long userId) {
