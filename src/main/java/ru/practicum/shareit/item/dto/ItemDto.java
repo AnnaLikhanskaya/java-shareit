@@ -18,15 +18,11 @@ import ru.practicum.shareit.validationGroups.Create;
 @Builder
 public class ItemDto {
     private Long id;
-
     @NotBlank(message = "Название не может быть пустым", groups = Create.class)
     private String name;
-
     @NotBlank(message = "Описание не может быть пустым", groups = Create.class)
     private String description;
-
     @NotNull(message = "Статус не может отсутствовать", groups = Create.class)
     private Boolean available;
-
     private Long owner;
 }
