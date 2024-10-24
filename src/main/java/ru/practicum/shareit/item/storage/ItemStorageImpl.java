@@ -38,9 +38,10 @@ public class ItemStorageImpl implements ItemStorage {
 
     @Override
     public Item getItemById(Long itemId) {
-        checkAvailability("найти", itemId);
-        log.info("Получен запрос получение вещи по id");
-        return items.get(itemId);
+        Item item = checkAvailability("найти", itemId);
+        log.info("Получен запрос на получение вещи по id");
+        return item;
+
     }
 
     @Override
@@ -53,20 +54,19 @@ public class ItemStorageImpl implements ItemStorage {
 
     @Override
     public Item updateItem(Item item) {
-        checkAvailability("изменить", item.getId());
-        checkOwner(item.getId(), item.getOwner());
-        Item updateItem = items.get(item.getId());
+        Item exsistingItem = checkAvailability("изменить", item.getId());
+        checkOwner(exsistingItem, item.getOwner());
         if (item.getName() != null && !item.getName().isBlank()) {
-            updateItem.setName(item.getName());
+            exsistingItem.setName(item.getName());
         }
         if (item.getDescription() != null && !item.getDescription().isBlank()) {
-            updateItem.setDescription(item.getDescription());
+            exsistingItem.setDescription(item.getDescription());
         }
         if (item.getAvailable() != null) {
-            updateItem.setAvailable(item.getAvailable());
+            exsistingItem.setAvailable(item.getAvailable());
         }
         log.info("Получен запрос на изменение характеристик вещи");
-        return updateItem;
+        return exsistingItem;
     }
 
     private long getId() {
@@ -74,15 +74,16 @@ public class ItemStorageImpl implements ItemStorage {
     }
 
     private Item checkAvailability(String operation, long id) {
-        String massage = String.format("Невозможно %s. Вещь не найдена!", operation);
+        String message = String.format("Невозможно %s. Вещь не найдена!", operation);
+        Item item = items.get(id);
         if (!items.containsKey(id)) {
-            throw new NotExsistObject(massage);
+            throw new NotExsistObject(message);
         }
-        return items.get(id);
+        return item;
     }
 
-    private void checkOwner(long itemId, long userId) {
-        if (items.get(itemId).getOwner() != userId) {
+    private void checkOwner(Item item, long userId) {
+        if (item.getOwner() != userId) {
             throw new NotExsistObject("Вещь принадлежит другому пользователю!");
         }
     }

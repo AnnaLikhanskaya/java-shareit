@@ -26,9 +26,9 @@ public class UserStorageImpl implements UserStorage {
 
     @Override
     public User getUserById(Long id) {
-        checkUserAvailability("найти", id);
+        User user = checkUserAvailability("найти", id);
         log.info("Получен запрос на вывод пользователя по id");
-        return users.get(id);
+        return user;
     }
 
     @Override
@@ -43,38 +43,38 @@ public class UserStorageImpl implements UserStorage {
 
     @Override
     public User updateUser(User user) {
-        checkUserAvailability("изменить", user.getId());
-        User updateUser = users.get(user.getId());
-        String email = updateUser.getEmail();
-        User updateEmail = usersEmail.get(email);
+        User exsistingsUser = checkUserAvailability("изменить", user.getId());
+        String email = exsistingsUser.getEmail();
         if (user.getName() != null && !user.getName().isBlank()) {
-            updateUser.setName(user.getName());
-            updateEmail.setName(user.getName());
+            exsistingsUser.setName(user.getName());
         }
         if (user.getEmail() != null) {
             isExist(user.getEmail());
-            updateUser.setEmail(user.getEmail());
+            exsistingsUser.setEmail(user.getEmail());
             usersEmail.remove(email);
-            usersEmail.put(updateUser.getEmail(), updateUser);
+            usersEmail.put(exsistingsUser.getEmail(), exsistingsUser);
         }
         log.info("Получен запрос на изменение пользователя");
-        return updateUser;
+        return exsistingsUser;
     }
 
     @Override
     public void deleteUser(Long id) {
-        checkUserAvailability("удалить", id);
+        checkUserAvailability("найти", id);
         usersEmail.remove(users.get(id).getEmail());
         users.remove(id);
         log.info("Получен запрос на удаление пользователя");
     }
 
     @Override
-    public void checkUserAvailability(String operation, Long id) {
-        String massage = String.format("Невозможно %s. Пользователь отсутствует!", operation);
+    public User checkUserAvailability(String operation, Long id) {
+        User user = users.get(id);
         if (!users.containsKey(id)) {
+            String massage = String.format("Невозможно %s. Пользователь отсутствует!", operation);
             throw new NotExsistObject(massage);
         }
+        return user;
+
     }
 
     private void isExist(String email) {
