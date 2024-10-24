@@ -1,4 +1,4 @@
-package ru.practicum.shareit.item.model;
+package ru.practicum.shareit.user.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,15 +8,12 @@ import lombok.NoArgsConstructor;
 /**
  * TODO Sprint add-controllers.
  */
-
-@Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Data
 @Builder
-public class Item {
+public class User {
     private Long id;
     private String name;
-    private String description;
-    private Boolean available;
-    private Long owner;
+    private String email;
 }
