@@ -11,16 +11,13 @@ import ru.practicum.shareit.validationGroups.Update;
 
 import java.util.List;
 
-/**
- * TODO Sprint add-controllers.
- */
 @RestController
 @RequestMapping(path = "/users")
 public class UserController {
     private final UserService userService;
 
     @Autowired
-    public UserController(@Qualifier("userServiceImpl") UserService userService) {
+    public UserController(@Qualifier("userServiceDb") UserService userService) {
         this.userService = userService;
     }
 
