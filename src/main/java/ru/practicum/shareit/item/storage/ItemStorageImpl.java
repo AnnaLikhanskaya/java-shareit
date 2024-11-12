@@ -23,7 +23,7 @@ public class ItemStorageImpl implements ItemStorage {
     public List<Item> getItemsByUser(Long userId) {
         log.info("Получен запрос на вывод вещей определенного пользователя");
         return items.values().stream()
-                .filter(item -> Objects.equals(item.getOwner(), userId))
+                .filter(item -> Objects.equals(item.getOwner().getId(), userId))
                 .collect(Collectors.toList());
     }
 
