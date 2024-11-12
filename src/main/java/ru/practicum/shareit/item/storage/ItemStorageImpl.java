@@ -82,7 +82,7 @@ public class ItemStorageImpl implements ItemStorage {
     }
 
     private void checkOwner(Item item, long userId) {
-        if (!Objects.equals(item.getOwner(), userId)) {
+        if (!Objects.equals(item.getOwner().getId(), userId)) {
             throw new NotExsistObject("Вещь принадлежит другому пользователю!");
         }
     }
