@@ -49,9 +49,18 @@ public class BookingServiceDb implements BookingService {
         }
 
         User user = getUser(userId);
-        BookingOutputDto bookingOutputDto = new BookingOutputDto(bookingInputDto, null, item, user, BookingStatus.WAITING);
-        log.info("Бронирование создано");
-        return BookingMapper.toBookingDto(bookingRepository.save(BookingMapper.toBooking(bookingOutputDto)));
+        Booking booking = new Booking();
+        booking.setItem(item);
+        booking.setBooker(user);
+        booking.setStart(bookingInputDto.getStart());
+        booking.setEnd(bookingInputDto.getEnd());
+        booking.setStatus(BookingStatus.WAITING);
+
+        Booking savedBooking = bookingRepository.save(booking);
+
+        log.info("Бронирование создано с ID: {}", savedBooking.getId());
+
+        return BookingMapper.toBookingDto(savedBooking);
     }
 
     @Override
@@ -67,12 +76,16 @@ public class BookingServiceDb implements BookingService {
             throw new InvalidRequestException("Статус бронирования можно изменить только во время его ожидания");
         }
         booking.setStatus(approved ? BookingStatus.APPROVED : BookingStatus.REJECTED);
-        log.info("Бронирование изменено");
-        return BookingMapper.toBookingDto(bookingRepository.save(booking));
+        Booking savedBooking = bookingRepository.save(booking);
+
+        log.info("Бронирование изменено с ID: {}", savedBooking.getId());
+        return BookingMapper.toBookingDto(savedBooking);
     }
 
     @Override
     public BookingOutputDto getBookingInfo(Long bookingId, Long userId) {
+        log.info("Получен запрос на получение информации о бронировании  с ID: {}", bookingId);
+
         User user = getUser(userId);
         Booking booking = getBooking(bookingId);
         User owner = booking.getItem().getOwner();
@@ -81,7 +94,7 @@ public class BookingServiceDb implements BookingService {
         if (!canGetInfo) {
             throw new OtherDataException("Просматривать информацию о бронировании могут владелец или бронирующий");
         }
-        log.info("Получен запрос на получение информации о бронировании");
+
         return BookingMapper.toBookingDto(booking);
     }
 
@@ -104,7 +117,7 @@ public class BookingServiceDb implements BookingService {
                 return convertBookings(bookingRepository.findByBookerAndStatus(booker, BookingStatus.REJECTED));
         }
 
-        throw new InvalidRequestException("Не существующий статус");
+        throw new InvalidRequestException("Не существующий статус" + state);
     }
 
     @Override
@@ -132,7 +145,7 @@ public class BookingServiceDb implements BookingService {
             case REJECTED:
                 return convertBookings(bookingRepository.findByItemAndStatus(item, BookingStatus.REJECTED));
             default:
-                throw new UnknownStateException("Unknown state: UNSUPPORTED_STATUS");
+                throw new UnknownStateException("Unknown state: " + state);
         }
     }
 
@@ -145,24 +158,20 @@ public class BookingServiceDb implements BookingService {
 
     private User getUser(Long userId) {
         return userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("Невозможно найти. Пользователь отсутствует!"));
+                .orElseThrow(() -> new UserNotFoundException("Невозможно найти пользователя с ID: " + userId));
     }
 
     private Item getItem(Long itemId) {
         return itemRepository.findById(itemId)
-                .orElseThrow(() -> new NotExsistObject("Невозможно найти. Вещь отсутствует!"));
+                .orElseThrow(() -> new NotExsistObject("Невозможно найти вещь с ID: " + itemId));
     }
 
     private Booking getBooking(Long bookingId) {
         return bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new NotExsistObject("Невозможно найти. Бронь отсутствует!"));
+                .orElseThrow(() -> new NotExsistObject("Невозможно найти бронирование с ID: " + bookingId));
     }
 
     private void isTheTimeCorrect(BookingInputDto bookingInputDto) {
-        if (bookingInputDto.getStart().isBefore(LocalDateTime.now())
-                || bookingInputDto.getEnd().isBefore(LocalDateTime.now())) {
-            throw new InvalidRequestException("Начало или конец бронирования не могут быть в прошлом");
-        }
         if (bookingInputDto.getEnd().isBefore(bookingInputDto.getStart())) {
             throw new InvalidRequestException("Конец бронирования не может быть раньше начала");
         }

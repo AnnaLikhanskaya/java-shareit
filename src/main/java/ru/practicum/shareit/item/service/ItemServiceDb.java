@@ -111,26 +111,29 @@ public class ItemServiceDb implements ItemService, CommentService {
         boolean isBooker = bookingRepository.findByBooker(user).stream()
                 .anyMatch(booking -> booking.getItem().equals(item));
         if (!isBooker) {
-            throw new InvalidRequestException("Невозможно оставить комментарий.Пользователь никогда не бронировал вещь");
+            throw new InvalidRequestException("Невозможно оставить комментарий." +
+                    "Пользователь с ID " + user.getId() + " никогда не бронировал вещь с ID " + item.getId());
         }
     }
 
     private void isTheBookingCompleted(Item item, User user) {
-        boolean isEnd = bookingRepository.findByBookerAndItem(user, item).stream()
-                .anyMatch((booking) -> booking.getEnd().isBefore(LocalDateTime.now()));
+        List<Booking> bookings = bookingRepository.findByBookerAndItem(user, item);
+        boolean isEnd = bookings.stream()
+                .anyMatch(booking -> booking.getEnd().isBefore(LocalDateTime.now()));
         if (!isEnd) {
-            throw new InvalidRequestException("Невозможно оставить комментарий. Бронирование не завершено");
+            throw new InvalidRequestException("Невозможно оставить комментарий. " +
+                    "Бронирование с ID " + bookings.getFirst().getId() + " не завершено");
         }
     }
 
     private User getUser(Long userId) {
         return userRepository.findById(userId)
-                .orElseThrow(() -> new NotExsistObject("Невозможно найти. Пользователь отсутствует!"));
+                .orElseThrow(() -> new NotExsistObject("Невозможно найти пользователя с ID: " + userId));
     }
 
     private Item getItem(Long itemId) {
         return itemRepository.findById(itemId)
-                .orElseThrow(() -> new NotExsistObject("Невозможно найти. Вещь отсутствует!"));
+                .orElseThrow(() -> new NotExsistObject("Невозможно найти вещь с ID: " + itemId));
     }
 
     private ItemDto fillItemDto(Item item, Long userId) {
