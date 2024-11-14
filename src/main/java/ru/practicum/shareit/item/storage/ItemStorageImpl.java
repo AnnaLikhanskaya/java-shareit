@@ -23,7 +23,7 @@ public class ItemStorageImpl implements ItemStorage {
     public List<Item> getItemsByUser(Long userId) {
         log.info("Получен запрос на вывод вещей определенного пользователя");
         return items.values().stream()
-                .filter(item -> Objects.equals(item.getOwner(), userId))
+                .filter(item -> Objects.equals(item.getOwner().getId(), userId))
                 .collect(Collectors.toList());
     }
 
@@ -41,7 +41,6 @@ public class ItemStorageImpl implements ItemStorage {
         Item item = checkAvailability("найти", itemId);
         log.info("Получен запрос на получение вещи по id");
         return item;
-
     }
 
     @Override
@@ -55,7 +54,7 @@ public class ItemStorageImpl implements ItemStorage {
     @Override
     public Item updateItem(Item item) {
         Item exsistingItem = checkAvailability("изменить", item.getId());
-        checkOwner(exsistingItem, item.getOwner());
+        checkOwner(exsistingItem, item.getOwner().getId());
         if (item.getName() != null && !item.getName().isBlank()) {
             exsistingItem.setName(item.getName());
         }
@@ -83,7 +82,7 @@ public class ItemStorageImpl implements ItemStorage {
     }
 
     private void checkOwner(Item item, long userId) {
-        if (item.getOwner() != userId) {
+        if (!Objects.equals(item.getOwner().getId(), userId)) {
             throw new NotExsistObject("Вещь принадлежит другому пользователю!");
         }
     }
