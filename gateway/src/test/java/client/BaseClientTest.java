@@ -77,8 +77,7 @@ public class BaseClientTest {
     @Test
     void testPatch() {
         ResponseEntity<Object> responseEntity = new ResponseEntity<>(HttpStatus.OK);
-        when(restTemplate.exchange(any(String.class), eq(HttpMethod.PATCH), any(HttpEntity.class)
-                , eq(Object.class)))
+        when(restTemplate.exchange(any(String.class), eq(HttpMethod.PATCH), any(HttpEntity.class), eq(Object.class)))
                 .thenReturn(responseEntity);
 
         ResponseEntity<Object> result = baseClient.patch("/items", 1L, new Object());
