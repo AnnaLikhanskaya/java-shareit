@@ -15,15 +15,15 @@ public class BaseClient {
         this.rest = rest;
     }
 
-    protected ResponseEntity<Object> get() {
+    public ResponseEntity<Object> get() {
         return get("", null, null);
     }
 
-    protected ResponseEntity<Object> get(long userId) {
+    public ResponseEntity<Object> get(long userId) {
         return get("", userId, null);
     }
 
-    protected ResponseEntity<Object> get(String path, long userId) {
+    public ResponseEntity<Object> get(String path, long userId) {
         return get(path, userId, null);
     }
 
@@ -31,7 +31,7 @@ public class BaseClient {
         return makeAndSendRequest(HttpMethod.GET, path, userId, parameters, null);
     }
 
-    protected <T> ResponseEntity<Object> post(String path, long userId, T body) {
+    public <T> ResponseEntity<Object> post(String path, long userId, T body) {
         return post(path, userId, null, body);
     }
 
@@ -51,7 +51,7 @@ public class BaseClient {
         return patch(path, userId, null, null);
     }
 
-    protected <T> ResponseEntity<Object> patch(String path, long userId, T body) {
+    public <T> ResponseEntity<Object> patch(String path, long userId, T body) {
         return patch(path, userId, null, body);
     }
 
@@ -59,7 +59,7 @@ public class BaseClient {
         return makeAndSendRequest(HttpMethod.PATCH, path, userId, parameters, body);
     }
 
-    protected ResponseEntity<Object> delete(String path, long userId) {
+    public ResponseEntity<Object> delete(String path, long userId) {
         return delete(path, userId, null);
     }
 
@@ -79,7 +79,7 @@ public class BaseClient {
         }
     }
 
-    private static HttpHeaders defaultHeaders(Long userId, boolean isNotEmpty) {
+    public static HttpHeaders defaultHeaders(Long userId, boolean isNotEmpty) {
         HttpHeaders headers = new HttpHeaders();
         if (isNotEmpty) {
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -91,7 +91,7 @@ public class BaseClient {
         return headers;
     }
 
-    private static ResponseEntity<Object> prepareGatewayResponse(ResponseEntity<Object> response) {
+    public static ResponseEntity<Object> prepareGatewayResponse(ResponseEntity<Object> response) {
         if (response.getStatusCode().is2xxSuccessful()) {
             return response;
         }
