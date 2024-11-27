@@ -1,4 +1,4 @@
-package itemRequest;
+package itemrequest;
 
 import org.junit.jupiter.api.Test;
 import ru.practicum.item.dto.ItemForRequestDto;
