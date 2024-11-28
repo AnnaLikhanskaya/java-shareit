@@ -4,14 +4,21 @@
 //import lombok.SneakyThrows;
 //import org.junit.jupiter.api.BeforeEach;
 //import org.junit.jupiter.api.Test;
+//import org.junit.jupiter.api.extension.ExtendWith;
 //import org.springframework.beans.factory.annotation.Autowired;
+//import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+//import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 //import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 //import org.springframework.boot.test.context.SpringBootTest;
 //import org.springframework.boot.test.mock.mockito.MockBean;
 //import org.springframework.http.MediaType;
+//import org.springframework.test.context.ContextConfiguration;
+//import org.springframework.test.context.junit.jupiter.SpringExtension;
 //import org.springframework.test.web.servlet.MockMvc;
 //import org.springframework.util.LinkedMultiValueMap;
 //import ru.practicum.ShareItServer;
+//import ru.practicum.booking.dto.BookingInputDto;
+//import ru.practicum.booking.dto.BookingStatus;
 //import ru.practicum.exception.NotExsistObject;
 //import ru.practicum.item.controller.ItemController;
 //import ru.practicum.item.dto.CommentDto;
@@ -20,256 +27,167 @@
 //import ru.practicum.item.model.Item;
 //import ru.practicum.item.service.CommentService;
 //import ru.practicum.item.service.ItemService;
+//import ru.practicum.user.dto.UserDto;
 //import ru.practicum.user.model.User;
 //
+//import java.nio.charset.StandardCharsets;
+//import java.time.LocalDate;
+//import java.time.LocalDateTime;
+//import java.util.ArrayList;
 //import java.util.List;
 //
+//import static org.hamcrest.Matchers.*;
+//import static org.mockito.ArgumentMatchers.any;
+//import static org.mockito.ArgumentMatchers.anyLong;
 //import static org.mockito.Mockito.*;
 //import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-//import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-//import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+//import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 //
 //@WebMvcTest(ItemController.class)
-//@SpringBootTest(classes = ShareItServer.class)
-//public class ItemControllerTest {
+//class ItemControllerTest {
+//    @MockBean
+//    ItemService itemService;
+//
+//
 //
 //    @Autowired
-//    private ObjectMapper objectMapper;
+//    MockMvc mockMvc;
 //
 //    @Autowired
-//    private MockMvc mockMvc;
+//    ObjectMapper objectMapper;
 //
-//    @MockBean
-//    private ItemService itemService;
-//
-//    @MockBean
-//    private CommentService commentService;
-//
-//    private User user;
-//    private User incorrectOwner;
-//    private Item itemCorrect;
+//    UserDto userDto;
+//    List<ItemDto> itemsDto;
+//    ItemDto itemDto;
 //
 //    @BeforeEach
-//    void beforeEach() {
-//        user = new User(1L, "correct", "forItem@mail.ru");
-//        incorrectOwner = new User(4L, "incorrect", "incorrect@mail.ru");
-//        itemCorrect = new Item(1L, "correct", "correct desc", true, user, null);
+//    void prepare() {
+//        userDto = UserDto.builder()
+//                .id(1L)
+//                .name("userName")
+//                .email("user@mail.ru")
+//                .birthday(LocalDate.now().minusYears(20))
+//                .build();
+//        itemsDto = new ArrayList<>();
+//        itemsDto.add(ItemDto.builder()
+//                .id(1L)
+//                .name("itemName")
+//                .description("itemDescription")
+//                .available(true)
+//                .build());
+//        itemsDto.add(ItemDto.builder()
+//                .id(2L)
+//                .name("anotherItemName")
+//                .description("anotherItemDescription")
+//                .available(true)
+//                .build());
 //    }
 //
-//    @SneakyThrows
 //    @Test
-//    void itemCreate_whenItemCorrect_thenReturnedOk() {
-//        ItemDto itemDto = ItemMapper.toItemDto(itemCorrect);
-//        when(itemService.creatItem(1L, itemDto)).thenReturn(itemDto);
-//
-//        mockMvc.perform(post("/items")
-//                        .content(objectMapper.writeValueAsString(itemDto))
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .header("X-Sharer-User-Id", 1))
-//                .andExpect(status().isOk())
-//                .andExpect(content().json(objectMapper.writeValueAsString(itemDto)));
-//
-//        verify(itemService, times(1)).creatItem(anyLong(), any());
-//    }
-//
-//    @SneakyThrows
-//    @Test
-//    void itemCreate_whenUserIdNotPresent_thenReturnedClientError() {
-//        ItemDto itemDto = ItemMapper.toItemDto(itemCorrect);
-//
-//        mockMvc.perform(post("/items")
-//                        .content(objectMapper.writeValueAsString(itemDto))
-//                        .contentType(MediaType.APPLICATION_JSON))
-//                .andExpect(status().isBadRequest())
-//                .andExpect(content().json("{\"error\":\"Required request header 'X-Sharer-User-Id' for method parameter type Long is not present\"}"));
-//
-//        verify(itemService, never()).creatItem(anyLong(), any());
-//    }
-//
-//    @SneakyThrows
-//    @Test
-//    void itemCreate_whenIncorrectOwner_thenReturnedClientError() {
-//        ItemDto itemDto = ItemMapper.toItemDto(new Item(1L, "correct", "correct desc", true, incorrectOwner, null));
-//        when(itemService.creatItem(2L, itemDto)).thenThrow(new NotExsistObject("Невозможно найти. Пользователь отсутствует!"));
-//
-//        mockMvc.perform(post("/items")
-//                        .content(objectMapper.writeValueAsString(itemDto))
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .header("X-Sharer-User-Id", 2))
-//                .andExpect(status().isBadRequest())
-//                .andExpect(content().json("{\"error\":\"Невозможно найти. Пользователь отсутствует!\"}"));
-//
-//        verify(itemService, times(1)).creatItem(anyLong(), any());
-//    }
-//
-//    @SneakyThrows
-//    @Test
-//    void updateItem_whenItemCorrect_thenReturnedOk() {
-//        ItemDto itemDto = ItemMapper.toItemDto(new Item(1L, "update", "all update", false, user, null));
-//        when(itemService.updateItem(1L, itemDto, 1L)).thenReturn(itemDto);
-//
-//        mockMvc.perform(patch("/items/{itemId}", 1L)
-//                        .content(objectMapper.writeValueAsString(itemDto))
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .header("X-Sharer-User-Id", 1))
-//                .andExpect(status().isOk())
-//                .andExpect(content().json(objectMapper.writeValueAsString(itemDto)));
-//
-//        verify(itemService, times(1)).updateItem(anyLong(), any(), anyLong());
-//    }
-//
-//    @SneakyThrows
-//    @Test
-//    void updateItem_whenIncorrectOwner_thenReturnedClientError() {
-//        ItemDto itemDto = ItemMapper.toItemDto(new Item(1L, "correct", "correct desc", true, incorrectOwner, null));
-//        when(itemService.updateItem(2L, itemDto, 1L)).thenThrow(new NotExsistObject("Невозможно найти. Пользователь отсутствует!"));
-//
-//        mockMvc.perform(patch("/items/{itemId}", 1)
-//                        .content(objectMapper.writeValueAsString(itemDto))
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .header("X-Sharer-User-Id", 2))
-//                .andExpect(status().isBadRequest())
-//                .andExpect(content().json("{\"error\":\"Невозможно найти. Пользователь отсутствует!\"}"));
-//
-//        verify(itemService, times(1)).updateItem(anyLong(), any(), anyLong());
-//    }
-//
-//    @SneakyThrows
-//    @Test
-//    void updateItem_whenUserIdNotPresent_thenReturnedClientError() {
-//        ItemDto itemDto = ItemMapper.toItemDto(itemCorrect);
-//
-//        mockMvc.perform(patch("/items/{itemId}", 1)
-//                        .content(objectMapper.writeValueAsString(itemDto))
-//                        .contentType(MediaType.APPLICATION_JSON))
-//                .andExpect(status().isBadRequest())
-//                .andExpect(content().json("{\"error\":\"Required request header 'X-Sharer-User-Id' for method parameter type Long is not present\"}"));
-//
-//        verify(itemService, never()).updateItem(anyLong(), any(), anyLong());
-//    }
-//
-//    @SneakyThrows
-//    @Test
-//    void getItemsByUser_whenCorrectOwner_thenReturnedOk() {
-//        ItemDto itemDto = ItemMapper.toItemDto(itemCorrect);
-//        List<ItemDto> items = List.of(itemDto);
-//        LinkedMultiValueMap<String, String> requestParams = new LinkedMultiValueMap<>();
-//        requestParams.add("from", "0");
-//        requestParams.add("size", "10");
-//        when(itemService.getItemsByUser(1L, 0, 10)).thenReturn(items);
-//
+//    void getAllItemsOfUsers() throws Exception {
+//        when(itemService.getAllUserItems(anyLong()))
+//                .thenReturn(itemsDto);
 //        mockMvc.perform(get("/items")
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .params(requestParams)
-//                        .header("X-Sharer-User-Id", 1))
+//                        .header("X-Sharer-User-Id", userDto.getId())
+//                        .characterEncoding(StandardCharsets.UTF_8))
 //                .andExpect(status().isOk())
-//                .andExpect(content().json(objectMapper.writeValueAsString(items)));
-//
-//        verify(itemService, times(1)).getItemsByUser(anyLong(), anyInt(), anyInt());
+//                .andExpect(jsonPath("$.length()", is(itemsDto.size()), Integer.class))
+//                .andExpect(jsonPath("$[0].id", is(itemsDto.getFirst().getId()), Long.class))
+//                .andExpect(jsonPath("$[1].id", is(itemsDto.get(1).getId()), Long.class));
+//        verify(itemService, times(1)).getAllUserItems(userDto.getId());
 //    }
 //
-//    @SneakyThrows
 //    @Test
-//    void getItemsByUser_whenNotOwner_thenReturnedClientError() {
-//        ItemDto itemDto = ItemMapper.toItemDto(itemCorrect);
-//        LinkedMultiValueMap<String, String> requestParams = new LinkedMultiValueMap<>();
-//        requestParams.add("from", "0");
-//        requestParams.add("size", "10");
+//    void getById() throws Exception {
+//        when(itemService.getById(anyLong(), anyLong()))
+//                .thenReturn(itemsDto.getFirst());
+//        mockMvc.perform(get("/items/{itemId}", itemsDto.getFirst().getId())
+//                        .header("X-Sharer-User-Id", userDto.getId())
+//                        .characterEncoding(StandardCharsets.UTF_8))
+//                .andExpect(status().isOk())
+//                .andExpect(jsonPath("$.id", is(itemsDto.getFirst().getId()), Long.class))
+//                .andExpect(jsonPath("$.name", is(itemsDto.getFirst().getName()), String.class));
+//        verify(itemService, times(1)).getById(userDto.getId(), itemsDto.getFirst().getId());
 //
-//        mockMvc.perform(get("/items")
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .params(requestParams))
-//                .andExpect(status().isBadRequest())
-//                .andExpect(content().json("{\"error\":\"Required request header 'X-Sharer-User-Id' for method parameter type Long is not present\"}"));
-//
-//        verify(itemService, never()).getItemsByUser(anyLong(), anyInt(), anyInt());
+//        mockMvc.perform(get("/items/{itemId}", itemsDto.getFirst().getId())
+//                        .characterEncoding(StandardCharsets.UTF_8))
+//                .andExpect(status().is4xxClientError());
 //    }
 //
-//    @SneakyThrows
 //    @Test
-//    void getItemsByText_whenSearch_thenReturnedOk() {
-//        ItemDto itemDto = ItemMapper.toItemDto(itemCorrect);
-//        List<ItemDto> items = List.of(itemDto);
-//        LinkedMultiValueMap<String, String> requestParams = new LinkedMultiValueMap<>();
-//        requestParams.add("text", "test");
-//        requestParams.add("from", "0");
-//        requestParams.add("size", "10");
-//        when(itemService.getItemByText("test", 0, 10)).thenReturn(items);
-//
+//    void searchItems() throws Exception {
+//        String searchString = "textOfSearch";
+//        when(itemService.searchItems(anyLong(), anyString()))
+//                .thenReturn(itemsDto);
 //        mockMvc.perform(get("/items/search")
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .params(requestParams)
-//                        .header("X-Sharer-User-Id", 1))
-//                .andExpect(status().isOk())
-//                .andExpect(content().json(objectMapper.writeValueAsString(items)));
-//
-//        verify(itemService, times(1)).getItemByText(anyString(), anyInt(), anyInt());
+//                        .header("X-Sharer-User-Id", userDto.getId())
+//                        .param("text", searchString)
+//                        .characterEncoding(StandardCharsets.UTF_8))
+//                .andExpect(jsonPath("$.length()", is(itemsDto.size())))
+//                .andExpect(jsonPath("$[0].id", is(itemsDto.getFirst().getId()), Long.class))
+//                .andExpect(jsonPath("$[1].id", is(itemsDto.get(1).getId()), Long.class));
+//        verify(itemService, times(1)).searchItems(userDto.getId(), searchString);
 //    }
 //
-//    @SneakyThrows
 //    @Test
-//    void getItemById_whenOwnerPresent_thenReturnedOk() {
-//        ItemDto itemDto = ItemMapper.toItemDto(itemCorrect);
-//        when(itemService.getItemById(1L, 1L)).thenReturn(itemDto);
-//
-//        mockMvc.perform(get("/items/{userId}", 1)
-//                        .header("X-Sharer-User-Id", 1))
-//                .andExpect(status().isOk())
-//                .andExpect(content().json(objectMapper.writeValueAsString(itemDto)));
-//
-//        verify(itemService).getItemById(anyLong(), anyLong());
-//    }
-//
-//    @SneakyThrows
-//    @Test
-//    void getItemById_whenOwnerNotPresent_thenReturnedClientError() {
-//        mockMvc.perform(get("/items/{userId}", 1))
-//                .andExpect(status().isBadRequest())
-//                .andExpect(content().json("{\"error\":\"Required request header 'X-Sharer-User-Id' for method parameter type Long is not present\"}"));
-//
-//        verify(itemService, never()).getItemById(anyLong(), anyLong());
-//    }
-//
-//    @SneakyThrows
-//    @Test
-//    void getItemById_whenItemIdNotFound_thenReturnedClientError() {
-//        when(itemService.getItemById(2L, 1L)).thenThrow(new NotExsistObject("Невозможно найти. вещь отсутствует!"));
-//
-//        mockMvc.perform(get("/items/{userId}", 2)
-//                        .header("X-Sharer-User-Id", 1))
-//                .andExpect(status().isBadRequest())
-//                .andExpect(content().json("{\"error\":\"Невозможно найти. вещь отсутствует!\"}"));
-//
-//        verify(itemService).getItemById(anyLong(), anyLong());
-//    }
-//
-//    @SneakyThrows
-//    @Test
-//    void postComment_whenCorrectComment_thenReturnedOk() {
-//        CommentDto comment = CommentDto.builder().text("test").build();
-//        when(commentService.addComment(1L, 1L, comment)).thenReturn(comment);
-//
-//        mockMvc.perform(post("/items/{itemId}/comment", 1)
-//                        .content(objectMapper.writeValueAsString(comment))
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .header("X-Sharer-User-Id", 1))
-//                .andExpect(status().isOk())
-//                .andExpect(content().json(objectMapper.writeValueAsString(comment)));
-//
-//        verify(commentService).addComment(anyLong(), anyLong(), any());
-//    }
-//
-//    @SneakyThrows
-//    @Test
-//    void postComment_whenCorrectNotUserId_thenReturnedClientError() {
-//        CommentDto comment = CommentDto.builder().text("test").build();
-//
-//        mockMvc.perform(post("/items/{itemId}/comment", 1)
-//                        .content(objectMapper.writeValueAsString(comment))
+//    void createItem() throws Exception {
+//        when(itemService.creatItem(any(), anyLong()))
+//                .thenReturn(itemsDto.getLast());
+//        mockMvc.perform(post("/items")
+//                        .header("X-Sharer-User-Id", userDto.getId())
+//                        .content(objectMapper.writeValueAsString(itemsDto.getLast()))
+//                        .characterEncoding(StandardCharsets.UTF_8)
 //                        .contentType(MediaType.APPLICATION_JSON))
-//                .andExpect(status().isBadRequest())
-//                .andExpect(content().json("{\"error\":\"Required request header 'X-Sharer-User-Id' for method parameter type Long is not present\"}"));
+//                .andExpect(jsonPath("$.id", is(itemsDto.getLast().getId()), Long.class));
+//        verify(itemService, times(1)).creatItem(itemsDto.getLast(), userDto.getId());
+//    }
 //
-//        verify(commentService, never()).addComment(anyLong(), anyLong(), any());
+//    @Test
+//    void createItemResponse() throws Exception {
+//        itemResponseDto = ItemResponseDto.builder()
+//                .id(5L)
+//                .item(itemsDto.getLast())
+//                .responseUser(userDto)
+//                .authorName(userDto.getName())
+//                .name("nameOfTheResponse")
+//                .text("textOfTheResponse")
+//                .created(LocalDateTime.now().minusMinutes(10))
+//                .build();
+//        when(responseService.createResponse(any(), anyLong(), anyLong()))
+//                .thenReturn(itemResponseDto);
+//        mockMvc.perform(post("/items/{itemId}/comment", itemsDto.getLast().getId())
+//                        .header("X-Sharer-User-Id", userDto.getId())
+//                        .content(objectMapper.writeValueAsString(itemResponseDto))
+//                        .characterEncoding(StandardCharsets.UTF_8)
+//                        .contentType(MediaType.APPLICATION_JSON))
+//                .andExpect(status().isCreated())
+//                .andExpect(jsonPath("$.id", is(itemResponseDto.getId()), Long.class))
+//                .andExpect(jsonPath("$.item.id", is(itemsDto.getLast().getId()), Long.class));
+//        verify(responseService, times(1)).createResponse(itemResponseDto, userDto.getId(), itemsDto.getLast().getId());
+//    }
+//
+//    @Test
+//    void updateItem() throws Exception {
+//        when(itemService.updateItem(any(), anyLong()))
+//                .thenReturn(itemsDto.getLast());
+//        mockMvc.perform(patch("/items/{itemId}", itemsDto.getLast().getId())
+//                        .header("X-Sharer-User-Id", userDto.getId())
+//                        .content(objectMapper.writeValueAsString(itemsDto.getLast()))
+//                        .characterEncoding(StandardCharsets.UTF_8)
+//                        .contentType(MediaType.APPLICATION_JSON))
+//                .andExpect(jsonPath("$.id", is(itemsDto.getLast().getId()), Long.class));
+//        verify(itemService, times(1)).updateItem(itemsDto.getLast(), userDto.getId());
+//    }
+//
+//    @Test
+//    void deleteItem() throws Exception {
+//        when(itemService.deleteItemById(anyLong(), anyLong()))
+//                .thenReturn(itemsDto.getLast());
+//        mockMvc.perform(delete("/items/{itemId}", itemsDto.getLast().getId())
+//                        .header("X-Sharer-User-Id", userDto.getId())
+//                        .characterEncoding(StandardCharsets.UTF_8))
+//                .andExpect(jsonPath("$.id", is(itemsDto.getLast().getId()), Long.class))
+//                .andExpect(jsonPath("$.name", is(itemsDto.getLast().getName()), String.class));
+//        verify(itemService, times(1)).deleteItemById(userDto.getId(), itemsDto.getLast().getId());
 //    }
 //}

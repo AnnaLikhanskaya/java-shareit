@@ -1,8 +1,6 @@
 package booking;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
 import ru.practicum.booking.dto.BookingOutputDto;
 import ru.practicum.booking.dto.BookingStatus;
 import ru.practicum.item.dto.ItemDto;
@@ -12,7 +10,6 @@ import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@ExtendWith(MockitoExtension.class)
 public class BookingOutputDtoTest {
 
     @Test

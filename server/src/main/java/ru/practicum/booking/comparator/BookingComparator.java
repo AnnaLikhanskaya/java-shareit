@@ -1,10 +1,10 @@
 package ru.practicum.booking.comparator;
 
+
 import ru.practicum.booking.dto.BookingOutputDto;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
-
 
 public class BookingComparator implements Comparator<BookingOutputDto> {
 
