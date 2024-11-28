@@ -14,8 +14,9 @@
     <packaging>pom</packaging>
     <name>ShareIt</name>
     <modules>
-        <module>gateway</module>
+        <module>model-dto</module>
         <module>server</module>
+        <module>gateway</module>
     </modules>
     <properties>
         <java.version>21</java.version>
@@ -136,12 +137,6 @@
         </dependency>
     </dependencies>
     <build>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>true</filtering>
-            </resource>
-        </resources>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>

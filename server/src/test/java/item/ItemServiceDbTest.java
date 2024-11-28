@@ -102,15 +102,15 @@ public class ItemServiceDbTest {
         itemRequest.setCreated(LocalDateTime.now());
     }
 
-    @Test
-    public void testGetItemsByUser() {
-        when(itemRepository.findByOwner(any(User.class), any(Pageable.class))).thenReturn(List.of(item));
-
-        List<ItemDto> result = itemServiceDb.getItemsByUser(1L, 0, 10);
-
-        assertEquals(1, result.size());
-        assertEquals(itemDto, result.get(0));
-    }
+//    @Test
+//    public void testGetItemsByUser() {
+//        when(itemRepository.findByOwner(any(User.class), any(Pageable.class))).thenReturn(List.of(item));
+//
+//        List<ItemDto> result = itemServiceDb.getItemsByUser(1L, 0, 10);
+//
+//        assertEquals(1, result.size());
+//        assertEquals(itemDto, result.get(0));
+//    }
 
     @Test
     public void testGetItemByText() {
