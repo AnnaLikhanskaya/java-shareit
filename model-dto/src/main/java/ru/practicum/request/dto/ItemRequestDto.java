@@ -10,14 +10,14 @@ import ru.practicum.item.dto.ItemForRequestDto;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
-public class ItemRequestDto {
-    private Long id;
-    @NotBlank(message = "Отсутствует описание обьекта, которое вы ищите")
-    private String description;
-    private LocalDateTime created;
-    private List<ItemForRequestDto> items;
-}
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    public class ItemRequestDto {
+        private Long id;
+        @NotBlank(message = "Отсутствует описание обьекта, которое вы ищите")
+        private String description;
+        private LocalDateTime created;
+        private List<ItemForRequestDto> items;
+    }

@@ -5,6 +5,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
+import ru.practicum.ShareItServer;
 import ru.practicum.booking.dto.DateBookingDto;
 import ru.practicum.item.dto.CommentDto;
 import ru.practicum.item.dto.ItemDto;
@@ -20,6 +23,8 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+@ContextConfiguration(classes = ShareItServer.class)
+@SpringBootTest
 public class ItemMapperTest {
 
     @Mock

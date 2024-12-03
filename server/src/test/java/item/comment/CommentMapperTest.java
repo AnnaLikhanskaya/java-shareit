@@ -5,6 +5,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
+import ru.practicum.ShareItServer;
 import ru.practicum.item.comment.mapper.CommentMapper;
 import ru.practicum.item.comment.model.Comment;
 import ru.practicum.item.dto.CommentDto;
@@ -15,6 +18,9 @@ import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+@ContextConfiguration(classes = ShareItServer.class)
+@SpringBootTest
 
 public class CommentMapperTest {
 

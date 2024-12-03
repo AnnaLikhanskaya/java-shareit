@@ -4,6 +4,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
+import ru.practicum.ShareItServer;
 import ru.practicum.item.comment.model.Comment;
 import ru.practicum.item.comment.storage.CommentRepository;
 import ru.practicum.item.model.Item;
@@ -16,6 +19,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
+@ContextConfiguration(classes = ShareItServer.class)
+@SpringBootTest
 public class CommentRepositoryTest {
 
     @Mock

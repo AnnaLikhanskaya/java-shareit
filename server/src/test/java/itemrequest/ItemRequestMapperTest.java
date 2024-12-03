@@ -1,6 +1,7 @@
 package itemrequest;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.test.context.ContextConfiguration;
 import ru.practicum.item.dto.ItemForRequestDto;
 import ru.practicum.request.dto.ItemRequestDto;
 import ru.practicum.request.mapper.ItemRequestMapper;
@@ -13,6 +14,9 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+
+@ContextConfiguration(classes = Short.class)
 
 public class ItemRequestMapperTest {
 

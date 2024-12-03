@@ -5,6 +5,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.context.ContextConfiguration;
+import ru.practicum.ShareItServer;
 import ru.practicum.user.controller.UserController;
 import ru.practicum.user.dto.UserDto;
 import ru.practicum.user.service.UserService;
@@ -17,6 +19,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
+@ContextConfiguration(classes = ShareItServer.class)
 @ExtendWith(MockitoExtension.class)
 public class UserControllerTest {
 

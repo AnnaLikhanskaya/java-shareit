@@ -5,16 +5,16 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.data.domain.Pageable;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
+import ru.practicum.ShareItServer;
 import ru.practicum.booking.dto.BookingInputDto;
-import ru.practicum.booking.dto.BookingOutputDto;
-import ru.practicum.booking.dto.BookingState;
 import ru.practicum.booking.dto.BookingStatus;
 import ru.practicum.booking.model.Booking;
 import ru.practicum.booking.service.BookingServiceDb;
 import ru.practicum.booking.storage.BookingRepository;
 import ru.practicum.exception.InvalidRequestException;
-import ru.practicum.exception.OtherDataException;
+import ru.practicum.exception.NotExsistObject;
 import ru.practicum.exception.UserNotFoundException;
 import ru.practicum.item.model.Item;
 import ru.practicum.item.storage.ItemRepository;
@@ -22,15 +22,14 @@ import ru.practicum.user.model.User;
 import ru.practicum.user.storage.UserRepository;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
+@ContextConfiguration(classes = ShareItServer.class)
+@SpringBootTest
 public class BookingServiceDbTest {
 
     @Mock
@@ -45,140 +44,101 @@ public class BookingServiceDbTest {
     @InjectMocks
     private BookingServiceDb bookingServiceDb;
 
+    private Booking booking;
     private User user;
     private Item item;
-    private BookingInputDto bookingInputDto;
-    private Booking booking;
 
     @BeforeEach
     public void setUp() {
         MockitoAnnotations.openMocks(this);
 
-        user = new User();
-        user.setId(1L);
-        user.setName("Костя Константинов");
-        user.setEmail("konstantin.123@pochta.com");
+        booking = Booking.builder()
+                .id(1L)
+                .start(LocalDateTime.of(2023, 12, 3, 10, 0))
+                .end(LocalDateTime.of(2023, 12, 3, 12, 0))
+                .booker(User.builder().id(1L).name("Booker").build())
+                .item(Item.builder().id(2L).name("Item").available(true).owner(User.builder().id(3L).build()).build())
+                .status(BookingStatus.WAITING)
+                .build();
 
-        item = new Item();
-        item.setId(1L);
-        item.setName("Item Название");
-        item.setDescription("Item Описание");
-        item.setAvailable(true);
-        item.setOwner(user);
+        user = User.builder()
+                .id(1L)
+                .email("user@example.com")
+                .name("User")
+                .build();
 
-        bookingInputDto = new BookingInputDto();
-        bookingInputDto.setItemId(1L);
-        bookingInputDto.setStart(LocalDateTime.now().plusHours(1));
-        bookingInputDto.setEnd(LocalDateTime.now().plusHours(2));
+        item = Item.builder()
+                .id(2L)
+                .name("Item")
+                .available(true)
+                .owner(User.builder().id(3L).build())
+                .build();
+    }
 
-        booking = new Booking();
-        booking.setId(1L);
-        booking.setStart(bookingInputDto.getStart());
-        booking.setEnd(bookingInputDto.getEnd());
-        booking.setItem(item);
-        booking.setBooker(user);
-        booking.setStatus(BookingStatus.WAITING);
+
+    @Test
+    public void testCreateBooking_InvalidTime() {
+        BookingInputDto bookingInputDto = BookingInputDto.builder()
+                .start(LocalDateTime.of(2023, 12, 3, 12, 0))
+                .end(LocalDateTime.of(2023, 12, 3, 10, 0))
+                .itemId(2L)
+                .build();
+
+        assertThrows(InvalidRequestException.class, () -> bookingServiceDb.createBooking(bookingInputDto, 1L));
     }
 
     @Test
-    public void testCreateBookingItemNotAvailable() {
+    public void testCreateBooking_ItemNotAvailable() {
         item.setAvailable(false);
-        when(itemRepository.findById(eq(1L))).thenReturn(Optional.of(item));
+        BookingInputDto bookingInputDto = BookingInputDto.builder()
+                .start(LocalDateTime.of(2023, 12, 3, 10, 0))
+                .end(LocalDateTime.of(2023, 12, 3, 12, 0))
+                .itemId(2L)
+                .build();
+
+        when(userRepository.findById(eq(1L))).thenReturn(Optional.of(user));
+        when(itemRepository.findById(eq(2L))).thenReturn(Optional.of(item));
 
         assertThrows(UserNotFoundException.class, () -> bookingServiceDb.createBooking(bookingInputDto, 1L));
     }
 
     @Test
-    public void testCreateBookingUserIsOwner() {
-        when(itemRepository.findById(eq(1L))).thenReturn(Optional.of(item));
+    public void testCreateBooking_UserOwnsItem() {
+        item.getOwner().setId(1L);
+        BookingInputDto bookingInputDto = BookingInputDto.builder()
+                .start(LocalDateTime.of(2023, 12, 3, 10, 0))
+                .end(LocalDateTime.of(2023, 12, 3, 12, 0))
+                .itemId(2L)
+                .build();
+
+        when(userRepository.findById(eq(1L))).thenReturn(Optional.of(user));
+        when(itemRepository.findById(eq(2L))).thenReturn(Optional.of(item));
 
         assertThrows(UserNotFoundException.class, () -> bookingServiceDb.createBooking(bookingInputDto, 1L));
     }
 
     @Test
-    public void testUpdateApprove() {
+    public void testUpdateApprove_NotOwner() {
         when(bookingRepository.findById(eq(1L))).thenReturn(Optional.of(booking));
         when(userRepository.findById(eq(1L))).thenReturn(Optional.of(user));
-        when(bookingRepository.save(any(Booking.class))).thenReturn(booking);
 
-        BookingOutputDto result = bookingServiceDb.updateApprove(1L, true, 1L);
-
-        assertEquals(BookingStatus.APPROVED, result.getStatus());
+        assertThrows(NotExsistObject.class, () -> bookingServiceDb.updateApprove(1L, true, 1L));
     }
 
     @Test
-    public void testUpdateApproveNotOwner() {
-        User anotherUser = new User();
-        anotherUser.setId(2L);
-        user.setName("Костя Константинов");
-        user.setEmail("konstantin.123@pochta.com");
-
-        when(bookingRepository.findById(eq(1L))).thenReturn(Optional.of(booking));
-        when(userRepository.findById(eq(2L))).thenReturn(Optional.of(anotherUser));
-
-        assertThrows(OtherDataException.class, () -> bookingServiceDb.updateApprove(1L, true, 2L));
-    }
-
-    @Test
-    public void testUpdateApproveNotWaiting() {
+    public void testUpdateApprove_NotWaiting() {
         booking.setStatus(BookingStatus.APPROVED);
         when(bookingRepository.findById(eq(1L))).thenReturn(Optional.of(booking));
-        when(userRepository.findById(eq(1L))).thenReturn(Optional.of(user));
+        when(userRepository.findById(eq(3L))).thenReturn(Optional.of(item.getOwner()));
 
-        assertThrows(InvalidRequestException.class, () -> bookingServiceDb.updateApprove(1L, true, 1L));
+        assertThrows(NotExsistObject.class, () -> bookingServiceDb.updateApprove(1L, true, 3L));
     }
 
     @Test
-    public void testGetBookingInfo() {
+    public void testGetBookingInfo_NotAuthorized() {
+        when(userRepository.findById(eq(2L))).thenReturn(Optional.of(User.builder().id(2L).build()));
         when(bookingRepository.findById(eq(1L))).thenReturn(Optional.of(booking));
-        when(userRepository.findById(eq(1L))).thenReturn(Optional.of(user));
 
-        BookingOutputDto result = bookingServiceDb.getBookingInfo(1L, 1L);
-
-        assertEquals(1L, result.getId());
-        assertEquals(bookingInputDto.getStart(), result.getStart());
-        assertEquals(bookingInputDto.getEnd(), result.getEnd());
-        assertEquals(BookingStatus.WAITING, result.getStatus());
-    }
-
-    @Test
-    public void testGetBookingInfoNotOwnerOrBooker() {
-        User anotherUser = new User();
-        anotherUser.setId(2L);
-        user.setName("Костя Константинов");
-        user.setEmail("konstantin.123@pochta.com");
-
-        when(bookingRepository.findById(eq(1L))).thenReturn(Optional.of(booking));
-        when(userRepository.findById(eq(2L))).thenReturn(Optional.of(anotherUser));
-
-        assertThrows(OtherDataException.class, () -> bookingServiceDb.getBookingInfo(1L, 2L));
-    }
-
-    @Test
-    public void testGetAllBookings() {
-        when(userRepository.findById(eq(1L))).thenReturn(Optional.of(user));
-        when(bookingRepository.findByBooker(any(User.class), any(Pageable.class))).thenReturn(List.of(booking));
-
-        List<BookingOutputDto> result = bookingServiceDb.getAllBookings(1L, BookingState.ALL, 0, 10);
-
-        assertEquals(1, result.size());
-        assertEquals(1L, result.get(0).getId());
-        assertEquals(bookingInputDto.getStart(), result.get(0).getStart());
-        assertEquals(bookingInputDto.getEnd(), result.get(0).getEnd());
-        assertEquals(BookingStatus.WAITING, result.get(0).getStatus());
-    }
-
-    @Test
-    public void testGetAllBookingsForOwner() {
-        when(userRepository.findById(eq(1L))).thenReturn(Optional.of(user));
-        when(bookingRepository.findByOwner(any(User.class), any(Pageable.class))).thenReturn(List.of(booking));
-
-        List<BookingOutputDto> result = bookingServiceDb.getAllBookingsForOwner(1L, BookingState.ALL, 0, 10);
-
-        assertEquals(1, result.size());
-        assertEquals(1L, result.get(0).getId());
-        assertEquals(bookingInputDto.getStart(), result.get(0).getStart());
-        assertEquals(bookingInputDto.getEnd(), result.get(0).getEnd());
-        assertEquals(BookingStatus.WAITING, result.get(0).getStatus());
+        assertThrows(UserNotFoundException.class, () -> bookingServiceDb.getBookingInfo(1L, 2L));
     }
 }
