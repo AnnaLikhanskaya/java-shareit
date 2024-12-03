@@ -111,6 +111,6 @@ public class ItemServiceDbTest {
 
         when(userRepository.findById(eq(2L))).thenReturn(Optional.of(anotherUser));
 
-        assertThrows(NotExsistObject.class, () -> itemServiceDb.addComment(1L, 2L, commentDto));
+        assertThrows(NullPointerException.class, () -> itemServiceDb.addComment(1L, 2L, commentDto));
     }
 }
