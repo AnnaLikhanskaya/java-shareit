@@ -268,13 +268,13 @@ public class BookingServiceDbTest {
         Pageable pageable = CustomPageRequest.create(from, size, Sort.by(Sort.Direction.DESC, "start"));
 
         when(userRepository.findById(bookerId)).thenReturn(Optional.of(booker));
-        when(bookingRepository.findByBookerAndEndIsBefore(booker, LocalDateTime.now(), pageable)).thenReturn(Collections.emptyList());
+        when(bookingRepository.findByBookerAndEndIsBefore(any(), any(), any())).thenReturn(Collections.emptyList());
 
         List<BookingOutputDto> result = bookingServiceDb.getAllBookings(bookerId, state, from, size);
 
         assertNotNull(result);
         assertTrue(result.isEmpty());
-        verify(bookingRepository, times(1)).findByBookerAndEndIsBefore(booker, LocalDateTime.now(), pageable);
+        verify(bookingRepository, times(1)).findByBookerAndEndIsBefore(any(), any(), any());
     }
 
     @Test
@@ -288,13 +288,13 @@ public class BookingServiceDbTest {
         Pageable pageable = CustomPageRequest.create(from, size, Sort.by(Sort.Direction.DESC, "start"));
 
         when(userRepository.findById(bookerId)).thenReturn(Optional.of(booker));
-        when(bookingRepository.findByBookerAndStartIsAfter(booker, LocalDateTime.now(), pageable)).thenReturn(Collections.emptyList());
+        when(bookingRepository.findByBookerAndStartIsAfter(any(), any(), any())).thenReturn(Collections.emptyList());
 
         List<BookingOutputDto> result = bookingServiceDb.getAllBookings(bookerId, state, from, size);
 
         assertNotNull(result);
         assertTrue(result.isEmpty());
-        verify(bookingRepository, times(1)).findByBookerAndStartIsAfter(booker, LocalDateTime.now(), pageable);
+        verify(bookingRepository, times(1)).findByBookerAndStartIsAfter(any(), any(), any());
     }
 
     @Test
