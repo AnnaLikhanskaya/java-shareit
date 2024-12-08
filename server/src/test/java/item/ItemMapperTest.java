@@ -2,9 +2,9 @@ package item;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import ru.practicum.ShareItServer;
@@ -18,6 +18,7 @@ import ru.practicum.request.model.ItemRequest;
 import ru.practicum.user.dto.UserDto;
 import ru.practicum.user.model.User;
 
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -25,125 +26,138 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @ContextConfiguration(classes = ShareItServer.class)
 @SpringBootTest
+@ExtendWith(MockitoExtension.class)
 public class ItemMapperTest {
-
-    @Mock
-    private Item item;
-
-    @Mock
-    private List<CommentDto> comments;
-
-    @Mock
-    private DateBookingDto lastBooking;
-
-    @Mock
-    private DateBookingDto nextBooking;
-
-    @Mock
-    private ItemRequest request;
-
-    @Mock
-    private User owner;
-
-    @InjectMocks
-    private ItemMapper itemMapper;
-
-    private ItemDto itemDto;
 
     @BeforeEach
     public void setUp() {
         MockitoAnnotations.openMocks(this);
-
-        owner = new User();
-        owner.setId(1L);
-        owner.setName("Марк Пушкин");
-        owner.setEmail("qwerty.111@example.com");
-
-        request = new ItemRequest();
-        request.setId(1L);
-        request.setDescription("Request Описание");
-
-        item = new Item();
-        item.setId(1L);
-        item.setName("Item Название");
-        item.setDescription("Item Описание");
-        item.setAvailable(true);
-        item.setOwner(owner);
-        item.setRequest(request);
-
-        itemDto = ItemDto.builder()
-                .id(item.getId())
-                .name(item.getName())
-                .description(item.getDescription())
-                .available(item.getAvailable())
-                .owner(UserDto.builder()
-                        .id(owner.getId())
-                        .name(owner.getName())
-                        .email(owner.getEmail())
-                        .build())
-                .requestId(request.getId())
-                .comments(comments)
-                .lastBooking(lastBooking)
-                .nextBooking(nextBooking)
-                .build();
     }
 
     @Test
     public void testToItemDto() {
-        ItemDto result = itemMapper.toItemDto(item, comments, lastBooking, nextBooking);
+        Item item = Item.builder()
+                .id(1L)
+                .name("ItemName")
+                .description("ItemDescription")
+                .available(true)
+                .owner(User.builder().id(1L).name("OwnerName").build())
+                .request(ItemRequest.builder().id(2L).build())
+                .build();
 
-        assertNotNull(result);
-        assertEquals(item.getId(), result.getId());
-        assertEquals(item.getName(), result.getName());
-        assertEquals(item.getDescription(), result.getDescription());
-        assertEquals(item.getAvailable(), result.getAvailable());
-        assertEquals(owner.getId(), result.getOwner().getId());
-        assertEquals(owner.getName(), result.getOwner().getName());
-        assertEquals(owner.getEmail(), result.getOwner().getEmail());
-        assertEquals(comments, result.getComments());
-        assertEquals(lastBooking, result.getLastBooking());
-        assertEquals(nextBooking, result.getNextBooking());
-        assertEquals(request.getId(), result.getRequestId());
+        List<CommentDto> comments = Collections.emptyList();
+        DateBookingDto lastBooking = null;
+        DateBookingDto nextBooking = null;
+
+        ItemDto itemDto = ItemMapper.toItemDto(item, comments, lastBooking, nextBooking);
+
+        assertNotNull(itemDto);
+        assertEquals(1L, itemDto.getId());
+        assertEquals("ItemName", itemDto.getName());
+        assertEquals("ItemDescription", itemDto.getDescription());
+        assertEquals(true, itemDto.getAvailable());
+        assertNotNull(itemDto.getOwner());
+        assertEquals(1L, itemDto.getOwner().getId());
+        assertEquals("OwnerName", itemDto.getOwner().getName());
+        assertEquals(2L, itemDto.getRequestId());
+        assertEquals(comments, itemDto.getComments());
+        assertEquals(lastBooking, itemDto.getLastBooking());
+        assertEquals(nextBooking, itemDto.getNextBooking());
     }
 
     @Test
     public void testToItemDtoWithoutComments() {
-        ItemDto result = itemMapper.toItemDto(item);
+        Item item = Item.builder()
+                .id(1L)
+                .name("ItemName")
+                .description("ItemDescription")
+                .available(true)
+                .owner(User.builder().id(1L).name("OwnerName").build())
+                .request(ItemRequest.builder().id(2L).build())
+                .build();
 
-        assertNotNull(result);
-        assertEquals(item.getId(), result.getId());
-        assertEquals(item.getName(), result.getName());
-        assertEquals(item.getDescription(), result.getDescription());
-        assertEquals(item.getAvailable(), result.getAvailable());
-        assertEquals(owner.getId(), result.getOwner().getId());
-        assertEquals(owner.getName(), result.getOwner().getName());
-        assertEquals(owner.getEmail(), result.getOwner().getEmail());
+        ItemDto itemDto = ItemMapper.toItemDto(item);
+
+        assertNotNull(itemDto);
+        assertEquals(1L, itemDto.getId());
+        assertEquals("ItemName", itemDto.getName());
+        assertEquals("ItemDescription", itemDto.getDescription());
+        assertEquals(true, itemDto.getAvailable());
+        assertNotNull(itemDto.getOwner());
+        assertEquals(1L, itemDto.getOwner().getId());
+        assertEquals("OwnerName", itemDto.getOwner().getName());
+        assertEquals(2L, itemDto.getRequestId());
+    }
+
+    @Test
+    public void testToItemDtoWithComments() {
+        Item item = Item.builder()
+                .id(1L)
+                .name("ItemName")
+                .description("ItemDescription")
+                .available(true)
+                .owner(User.builder().id(1L).name("OwnerName").build())
+                .request(ItemRequest.builder().id(2L).build())
+                .build();
+
+        List<CommentDto> comments = Collections.emptyList();
+
+        ItemDto itemDto = ItemMapper.toItemDto(item, comments);
+
+        assertNotNull(itemDto);
+        assertEquals(1L, itemDto.getId());
+        assertEquals("ItemName", itemDto.getName());
+        assertEquals("ItemDescription", itemDto.getDescription());
+        assertEquals(true, itemDto.getAvailable());
+        assertNotNull(itemDto.getOwner());
+        assertEquals(1L, itemDto.getOwner().getId());
+        assertEquals("OwnerName", itemDto.getOwner().getName());
+        assertEquals(2L, itemDto.getRequestId());
+        assertEquals(comments, itemDto.getComments());
     }
 
     @Test
     public void testToItem() {
-        Item result = itemMapper.toItem(itemDto, request);
+        ItemDto itemDto = ItemDto.builder()
+                .id(1L)
+                .name("ItemName")
+                .description("ItemDescription")
+                .available(true)
+                .owner(UserDto.builder().id(1L).name("OwnerName").build())
+                .build();
 
-        assertNotNull(result);
-        assertEquals(itemDto.getId(), result.getId());
-        assertEquals(itemDto.getName(), result.getName());
-        assertEquals(itemDto.getDescription(), result.getDescription());
-        assertEquals(itemDto.getAvailable(), result.getAvailable());
-        assertEquals(itemDto.getOwner().getId(), result.getOwner().getId());
-        assertEquals(itemDto.getOwner().getName(), result.getOwner().getName());
-        assertEquals(itemDto.getOwner().getEmail(), result.getOwner().getEmail());
-        assertEquals(request, result.getRequest());
+        ItemRequest request = ItemRequest.builder().id(2L).build();
+
+        Item item = ItemMapper.toItem(itemDto, request);
+
+        assertNotNull(item);
+        assertEquals(1L, item.getId());
+        assertEquals("ItemName", item.getName());
+        assertEquals("ItemDescription", item.getDescription());
+        assertEquals(true, item.getAvailable());
+        assertNotNull(item.getOwner());
+        assertEquals(1L, item.getOwner().getId());
+        assertEquals("OwnerName", item.getOwner().getName());
+        assertEquals(request, item.getRequest());
     }
 
     @Test
     public void testToItemForRequestDto() {
-        ItemForRequestDto result = itemMapper.toItemForRequestDto(item);
+        Item item = Item.builder()
+                .id(1L)
+                .name("ItemName")
+                .description("ItemDescription")
+                .available(true)
+                .request(ItemRequest.builder().id(2L).build())
+                .build();
 
-        assertNotNull(result);
-        assertEquals(item.getId(), result.getId());
-        assertEquals(item.getName(), result.getName());
-        assertEquals(item.getDescription(), result.getDescription());
-        assertEquals(item.getAvailable(), result.getAvailable());
-        assertEquals(item.getRequest().getId(), result.getRequestId());
+        ItemForRequestDto itemForRequestDto = ItemMapper.toItemForRequestDto(item);
+
+        assertNotNull(itemForRequestDto);
+        assertEquals(1L, itemForRequestDto.getId());
+        assertEquals("ItemName", itemForRequestDto.getName());
+        assertEquals("ItemDescription", itemForRequestDto.getDescription());
+        assertEquals(true, itemForRequestDto.getAvailable());
+        assertEquals(2L, itemForRequestDto.getRequestId());
     }
 }

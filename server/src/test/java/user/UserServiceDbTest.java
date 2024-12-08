@@ -1,5 +1,6 @@
 package user;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -7,22 +8,19 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.practicum.exception.DuplicateException;
 import ru.practicum.exception.NotExsistObject;
+import ru.practicum.exception.UserNotFoundException;
 import ru.practicum.user.dto.UserDto;
-import ru.practicum.user.mapper.UserMapper;
 import ru.practicum.user.model.User;
 import ru.practicum.user.service.UserServiceDb;
 import ru.practicum.user.storage.UserRepository;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class UserServiceDbTest {
@@ -31,116 +29,108 @@ public class UserServiceDbTest {
     private UserRepository userRepository;
 
     @InjectMocks
-    private UserServiceDb userService;
+    private UserServiceDb userServiceDb;
 
-    @Test
-    public void testGetUsers() {
-        List<User> users = Arrays.asList(
-                User.builder().id(1L).name("User 1").email("user1@example.com").build(),
-                User.builder().id(2L).name("User 2").email("user2@example.com").build()
-        );
+    private User user;
+    private UserDto userDto;
 
-        when(userRepository.findAll()).thenReturn(users);
+    @BeforeEach
+    void setUp() {
+        user = new User();
+        user.setId(1L);
+        user.setName("Имя Фамилия");
+        user.setEmail("name.111@example.com");
 
-        List<UserDto> userDtos = userService.getUsers();
-
-        assertEquals(2, userDtos.size());
-        assertEquals(users.get(0).getId(), userDtos.get(0).getId());
-        assertEquals(users.get(1).getId(), userDtos.get(1).getId());
+        userDto = new UserDto();
+        userDto.setId(1L);
+        userDto.setName("Имя Фамилия");
+        userDto.setEmail("name.111@example.com");
     }
 
     @Test
-    public void testGetUserById() {
-        Long userId = 1L;
-        User user = User.builder().id(userId).name("User 1").email("user1@example.com").build();
+    void getUsers_notFound() {
+        when(userRepository.findById(any())).thenThrow(new UserNotFoundException(any()));
 
-        when(userRepository.findById(eq(userId))).thenReturn(Optional.of(user));
-
-        UserDto userDto = userService.getUserById(userId);
-
-        assertEquals(user.getId(), userDto.getId());
-        assertEquals(user.getName(), userDto.getName());
-        assertEquals(user.getEmail(), userDto.getEmail());
+        assertThrows(UserNotFoundException.class, () -> userServiceDb.getUserById(1L));
     }
 
     @Test
-    public void testGetUserByIdNotFound() {
-        Long userId = 1L;
+    void getUsers_shouldReturnListOfUsers() {
+        when(userRepository.findAll()).thenReturn(List.of(user));
 
-        when(userRepository.findById(eq(userId))).thenReturn(Optional.empty());
+        List<UserDto> result = userServiceDb.getUsers();
+        verify(userRepository, atMost(1)).findAll();
 
-        assertThrows(NotExsistObject.class, () -> userService.getUserById(userId));
+        assertEquals(1, result.size());
+        assertEquals(userDto, result.get(0));
     }
 
     @Test
-    public void testCreateUser() {
-        UserDto userDto = UserDto.builder().name("New User").email("newuser@example.com").build();
-        User user = UserMapper.toUser(userDto);
+    void getUserById_shouldReturnUserDto() {
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
+        UserDto result = userServiceDb.getUserById(1L);
+
+        assertEquals(userDto, result);
+    }
+
+    @Test
+    void getUserById_shouldThrowNotExsistObject() {
+        when(userRepository.findById(1L)).thenReturn(Optional.empty());
+
+        assertThrows(NotExsistObject.class, () -> userServiceDb.getUserById(1L));
+    }
+
+    @Test
+    void createUser_shouldReturnUserDto() {
         when(userRepository.save(any(User.class))).thenReturn(user);
 
-        UserDto createdUserDto = userService.createUser(userDto);
+        UserDto result = userServiceDb.createUser(userDto);
 
-        assertEquals(user.getId(), createdUserDto.getId());
-        assertEquals(user.getName(), createdUserDto.getName());
-        assertEquals(user.getEmail(), createdUserDto.getEmail());
+        assertEquals(userDto, result);
     }
 
     @Test
-    public void testCreateUserDuplicate() {
-        UserDto userDto = UserDto.builder().name("New User").email("newuser@example.com").build();
-
+    void createUser_shouldThrowDuplicateException() {
         when(userRepository.save(any(User.class))).thenThrow(new RuntimeException("Duplicate email"));
 
-        assertThrows(DuplicateException.class, () -> userService.createUser(userDto));
+        assertThrows(DuplicateException.class, () -> userServiceDb.createUser(userDto));
     }
 
     @Test
-    public void testUpdateUser() {
-        Long userId = 1L;
-        UserDto userDto = UserDto.builder().name("Updated User").email("updateduser@example.com").build();
-        User user = User.builder().id(userId).name("User 1").email("user1@example.com").build();
-
-        when(userRepository.findById(eq(userId))).thenReturn(Optional.of(user));
+    void updateUser_shouldReturnUserDto() {
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(userRepository.save(any(User.class))).thenReturn(user);
 
-        UserDto updatedUserDto = userService.updateUser(userDto, userId);
+        UserDto updatedUserDto = new UserDto();
+        updatedUserDto.setName("Jane Doe");
+        updatedUserDto.setEmail("jane.doe@example.com");
 
-        assertEquals(user.getId(), updatedUserDto.getId());
-        assertEquals(userDto.getName(), updatedUserDto.getName());
-        assertEquals(userDto.getEmail(), updatedUserDto.getEmail());
+        UserDto result = userServiceDb.updateUser(updatedUserDto, 1L);
+
+        assertEquals(updatedUserDto.getName(), result.getName());
+        assertEquals(updatedUserDto.getEmail(), result.getEmail());
     }
 
     @Test
-    public void testUpdateUserNotFound() {
-        Long userId = 1L;
-        UserDto userDto = UserDto.builder().name("Updated User").email("updateduser@example.com").build();
+    void updateUser_shouldThrowNotExsistObject() {
+        when(userRepository.findById(1L)).thenReturn(Optional.empty());
 
-        when(userRepository.findById(eq(userId))).thenReturn(Optional.empty());
-
-        assertThrows(NotExsistObject.class, () -> userService.updateUser(userDto, userId));
+        assertThrows(NotExsistObject.class, () -> userServiceDb.updateUser(userDto, 1L));
     }
 
     @Test
-    public void testUpdateUserDuplicate() {
-        Long userId = 1L;
-        UserDto userDto = UserDto.builder().name("Updated User").email("updateduser@example.com").build();
-        User user = User.builder().id(userId).name("User 1").email("user1@example.com").build();
-
-        when(userRepository.findById(eq(userId))).thenReturn(Optional.of(user));
+    void updateUser_shouldThrowDuplicateException() {
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(userRepository.save(any(User.class))).thenThrow(new RuntimeException("Duplicate email"));
 
-        assertThrows(DuplicateException.class, () -> userService.updateUser(userDto, userId));
+        assertThrows(DuplicateException.class, () -> userServiceDb.updateUser(userDto, 1L));
     }
 
     @Test
-    public void testDeleteUser() {
-        Long userId = 1L;
+    void deleteUser_shouldCallRepositoryDelete() {
+        userServiceDb.deleteUser(1L);
 
-        doNothing().when(userRepository).deleteById(eq(userId));
-
-        userService.deleteUser(userId);
-
-        // No assertions needed as the method has a void return type
+        verify(userRepository, times(1)).deleteById(1L);
     }
 }

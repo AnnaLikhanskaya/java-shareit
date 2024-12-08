@@ -2,89 +2,85 @@ package user;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.http.HttpStatus;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.ContextConfiguration;
+import ru.practicum.ShareItGateway;
 import ru.practicum.user.client.UserClient;
 import ru.practicum.user.controller.UserController;
 import ru.practicum.user.dto.UserDto;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
-public class UserControllerTest {
-
+@ContextConfiguration(classes = ShareItGateway.class)
+@ExtendWith(MockitoExtension.class)
+class UserControllerTest {
     @Mock
     private UserClient userClient;
 
     @InjectMocks
     private UserController userController;
 
+    private UserDto userDto;
+    private Long userId;
+
     @BeforeEach
-    public void setUp() {
-        MockitoAnnotations.initMocks(this);
+    void setUp() {
+        userId = 1L;
+        userDto = new UserDto();
     }
 
     @Test
-    public void testCreateUser() {
-        UserDto userDto = new UserDto();
-        ResponseEntity<Object> expectedResponse = ResponseEntity.ok().build();
-
-        when(userClient.createUser(eq(userDto))).thenReturn(expectedResponse);
+    void createUser_shouldCreateUser() {
+        when(userClient.createUser(userDto)).thenReturn(ResponseEntity.ok().build());
 
         ResponseEntity<Object> response = userController.createUser(userDto);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
+        verify(userClient, times(1)).createUser(userDto);
+        assertEquals(ResponseEntity.ok().build(), response);
     }
 
     @Test
-    public void testUpdateUser() {
-        Long userId = 1L;
-        UserDto userDto = new UserDto();
-        ResponseEntity<Object> expectedResponse = ResponseEntity.ok().build();
-
-        when(userClient.updateUser(eq(userId), eq(userDto))).thenReturn(expectedResponse);
+    void updateUser_shouldUpdateUser() {
+        when(userClient.updateUser(userId, userDto)).thenReturn(ResponseEntity.ok().build());
 
         ResponseEntity<Object> response = userController.updateUser(userId, userDto);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
+        verify(userClient, times(1)).updateUser(userId, userDto);
+        assertEquals(ResponseEntity.ok().build(), response);
     }
 
     @Test
-    public void testGetAllUsers() {
-        ResponseEntity<Object> expectedResponse = ResponseEntity.ok().build();
-
-        when(userClient.getAllUsers()).thenReturn(expectedResponse);
+    void getAllUsers_shouldReturnAllUsers() {
+        when(userClient.getAllUsers()).thenReturn(ResponseEntity.ok().build());
 
         ResponseEntity<Object> response = userController.getAllUsers();
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
+        verify(userClient, times(1)).getAllUsers();
+        assertEquals(ResponseEntity.ok().build(), response);
     }
 
     @Test
-    public void testGetUserById() {
-        Long userId = 1L;
-        ResponseEntity<Object> expectedResponse = ResponseEntity.ok().build();
-
-        when(userClient.getUserById(eq(userId))).thenReturn(expectedResponse);
+    void getUserById_shouldReturnUser() {
+        when(userClient.getUserById(userId)).thenReturn(ResponseEntity.ok().build());
 
         ResponseEntity<Object> response = userController.getUserById(userId);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
+        verify(userClient, times(1)).getUserById(userId);
+        assertEquals(ResponseEntity.ok().build(), response);
     }
 
     @Test
-    public void testDeleteUserById() {
-        Long userId = 1L;
-        ResponseEntity<Object> expectedResponse = ResponseEntity.ok().build();
-
-        when(userClient.deleteUserById(eq(userId))).thenReturn(expectedResponse);
+    void deleteUserById_shouldDeleteUser() {
+        when(userClient.deleteUserById(userId)).thenReturn(ResponseEntity.ok().build());
 
         ResponseEntity<Object> response = userController.deleteUserById(userId);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
+        verify(userClient, times(1)).deleteUserById(userId);
+        assertEquals(ResponseEntity.ok().build(), response);
     }
 }

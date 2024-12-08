@@ -8,6 +8,8 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.ContextConfiguration;
+import ru.practicum.ShareItGateway;
 import ru.practicum.booking.client.BookingClient;
 import ru.practicum.booking.controller.BookingController;
 import ru.practicum.booking.dto.BookItemRequestDto;
@@ -18,6 +20,7 @@ import static org.mockito.Mockito.when;
 
 
 @AutoConfigureMockMvc
+@ContextConfiguration(classes = ShareItGateway.class)
 public class BookingControllerTest {
 
     @Mock

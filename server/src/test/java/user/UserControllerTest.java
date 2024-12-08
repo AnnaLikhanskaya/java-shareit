@@ -1,23 +1,28 @@
 package user;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import ru.practicum.ShareItServer;
 import ru.practicum.user.controller.UserController;
 import ru.practicum.user.dto.UserDto;
 import ru.practicum.user.service.UserService;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ContextConfiguration(classes = ShareItServer.class)
 @ExtendWith(MockitoExtension.class)
@@ -29,62 +34,84 @@ public class UserControllerTest {
     @InjectMocks
     private UserController userController;
 
-    @Test
-    public void testGetUsers() {
-        List<UserDto> expectedUsers = Arrays.asList(new UserDto(), new UserDto());
+    private MockMvc mockMvc;
 
-        when(userService.getUsers()).thenReturn(expectedUsers);
-
-        List<UserDto> actualUsers = userController.getUsers();
-
-        assertEquals(expectedUsers, actualUsers);
+    @BeforeEach
+    public void setUp() {
+        mockMvc = MockMvcBuilders.standaloneSetup(userController).build();
     }
 
     @Test
-    public void testGetUserById() {
-        Long userId = 1L;
-        UserDto expectedUser = new UserDto();
+    public void testGetUsers() throws Exception {
+        List<UserDto> users = Collections.singletonList(UserDto.builder().id(1L).name("User1").email("user1@example.com").build());
+        when(userService.getUsers()).thenReturn(users);
 
-        when(userService.getUserById(eq(userId))).thenReturn(expectedUser);
+        mockMvc.perform(get("/users"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$[0].id").value(1L))
+                .andExpect(jsonPath("$[0].name").value("User1"))
+                .andExpect(jsonPath("$[0].email").value("user1@example.com"));
 
-        UserDto actualUser = userController.getUserById(userId);
-
-        assertEquals(expectedUser, actualUser);
+        verify(userService, times(1)).getUsers();
     }
 
     @Test
-    public void testCreateUser() {
-        UserDto userDto = new UserDto();
-        UserDto expectedUser = new UserDto();
+    public void testGetUserById() throws Exception {
+        UserDto user = UserDto.builder().id(1L).name("User1").email("user1@example.com").build();
+        when(userService.getUserById(anyLong())).thenReturn(user);
 
-        when(userService.createUser(eq(userDto))).thenReturn(expectedUser);
+        mockMvc.perform(get("/users/1"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.id").value(1L))
+                .andExpect(jsonPath("$.name").value("User1"))
+                .andExpect(jsonPath("$.email").value("user1@example.com"));
 
-        UserDto actualUser = userController.createUser(userDto);
-
-        assertEquals(expectedUser, actualUser);
+        verify(userService, times(1)).getUserById(anyLong());
     }
 
     @Test
-    public void testUpdateUser() {
-        Long userId = 1L;
-        UserDto userDto = new UserDto();
-        UserDto expectedUser = new UserDto();
+    public void testCreateUser() throws Exception {
+        UserDto user = UserDto.builder().id(1L).name("User1").email("user1@example.com").build();
+        when(userService.createUser(any(UserDto.class))).thenReturn(user);
 
-        when(userService.updateUser(eq(userDto), eq(userId))).thenReturn(expectedUser);
+        mockMvc.perform(post("/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"User1\",\"email\":\"user1@example.com\"}"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.id").value(1L))
+                .andExpect(jsonPath("$.name").value("User1"))
+                .andExpect(jsonPath("$.email").value("user1@example.com"));
 
-        UserDto actualUser = userController.updateUser(userId, userDto);
-
-        assertEquals(expectedUser, actualUser);
+        verify(userService, times(1)).createUser(any(UserDto.class));
     }
 
     @Test
-    public void testDeleteUser() {
-        Long userId = 1L;
+    public void testUpdateUser() throws Exception {
+        UserDto user = UserDto.builder().id(1L).name("UpdatedUser").email("updated@example.com").build();
+        when(userService.updateUser(any(UserDto.class), anyLong())).thenReturn(user);
 
-        doNothing().when(userService).deleteUser(eq(userId));
+        mockMvc.perform(patch("/users/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"UpdatedUser\",\"email\":\"updated@example.com\"}"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.id").value(1L))
+                .andExpect(jsonPath("$.name").value("UpdatedUser"))
+                .andExpect(jsonPath("$.email").value("updated@example.com"));
 
-        userController.deleteUser(userId);
+        verify(userService, times(1)).updateUser(any(UserDto.class), anyLong());
+    }
 
-        // No assertions needed as the method has a void return type
+    @Test
+    public void testDeleteUser() throws Exception {
+        doNothing().when(userService).deleteUser(anyLong());
+
+        mockMvc.perform(delete("/users/1"))
+                .andExpect(status().isOk());
+
+        verify(userService, times(1)).deleteUser(anyLong());
     }
 }

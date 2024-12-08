@@ -3,7 +3,7 @@ package booking;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.ContextConfiguration;
 import ru.practicum.ShareItServer;
 import ru.practicum.booking.dto.BookingState;
@@ -13,10 +13,10 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@DataJpaTest
+@WebMvcTest(controllers = BookingState.class)
 @ContextConfiguration(classes = ShareItServer.class)
-
 public class BookingStateTest {
+
     @ParameterizedTest
     @ValueSource(strings = {"ALL", "CURRENT", "FUTURE", "PAST", "REJECTED", "WAITING"})
     public void testFrom_ValidInput(String input) {
@@ -45,5 +45,4 @@ public class BookingStateTest {
         Optional<BookingState> result = BookingState.from(null);
         assertTrue(result.isEmpty());
     }
-
 }

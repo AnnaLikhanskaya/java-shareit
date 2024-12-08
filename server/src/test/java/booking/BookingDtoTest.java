@@ -5,9 +5,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.ContextConfiguration;
-import ru.practicum.ShareItGateway;
+import ru.practicum.ShareItServer;
+import ru.practicum.booking.dto.BookingInputDto;
 import ru.practicum.booking.dto.BookingOutputDto;
 import ru.practicum.booking.dto.BookingStatus;
 import ru.practicum.item.dto.ItemDto;
@@ -18,11 +19,9 @@ import java.time.LocalDateTime;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-
-@AutoConfigureMockMvc
-@ContextConfiguration(classes = ShareItGateway.class)
+@WebMvcTest(controllers = BookingInputDto.class)
+@ContextConfiguration(classes = ShareItServer.class)
 public class BookingDtoTest {
-
     @Mock
     private ItemDto itemDto;
 
@@ -82,4 +81,3 @@ public class BookingDtoTest {
         assertEquals(BookingStatus.APPROVED, allArgsBookingOutputDto.getStatus());
     }
 }
-

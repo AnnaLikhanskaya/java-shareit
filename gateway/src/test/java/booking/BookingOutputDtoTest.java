@@ -1,6 +1,9 @@
 package booking;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.test.context.ContextConfiguration;
+import ru.practicum.ShareItGateway;
 import ru.practicum.booking.dto.BookingOutputDto;
 import ru.practicum.booking.dto.BookingStatus;
 import ru.practicum.item.dto.ItemDto;
@@ -9,6 +12,9 @@ import ru.practicum.user.dto.UserDto;
 import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
+@AutoConfigureMockMvc
+@ContextConfiguration(classes = ShareItGateway.class)
 
 public class BookingOutputDtoTest {
 

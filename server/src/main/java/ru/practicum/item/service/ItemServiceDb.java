@@ -123,21 +123,12 @@ public class ItemServiceDb implements ItemService, CommentService {
     }
 
 
-    private boolean isBooker(Item item, User user) {
+    public boolean isBooker(Item item, User user) {
         return bookingRepository.findByBookerAndItem(user, item)
                 .stream()
                 .anyMatch((booking) -> booking.getEnd().isBefore(LocalDateTime.now()));
     }
 
-//private void isTheBookingCompleted(Item item, User user) {
-//    List<Booking> bookings = bookingRepository.findByBookerAndItem(user, item);
-//    boolean isEnd = bookings.stream()
-//            .anyMatch(booking -> booking.getEnd().isBefore(LocalDateTime.now()));
-//    if (!isEnd) {
-//        throw new InvalidRequestException("Невозможно оставить комментарий. " +
-//                "Бронирование с ID " + bookings.getFirst().getId() + " не завершено");
-//    }
-//}
 
     private User getUser(Long userId) {
         return userRepository.findById(userId)

@@ -3,6 +3,8 @@ package itemrequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.context.ContextConfiguration;
+import ru.practicum.ShareItGateway;
 import ru.practicum.item.dto.ItemForRequestDto;
 import ru.practicum.request.dto.ItemRequestDto;
 
@@ -11,6 +13,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@ContextConfiguration(classes = ShareItGateway.class)
 @ExtendWith(MockitoExtension.class)
 public class ItemRequestDtoTest {
 

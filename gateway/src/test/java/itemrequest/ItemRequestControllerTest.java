@@ -2,81 +2,79 @@ package itemrequest;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.http.HttpStatus;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.ContextConfiguration;
+import ru.practicum.ShareItGateway;
 import ru.practicum.request.client.RequestClient;
 import ru.practicum.request.controller.ItemRequestController;
 import ru.practicum.request.dto.ItemRequestDto;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
+@ContextConfiguration(classes = ShareItGateway.class)
+@ExtendWith(MockitoExtension.class)
 public class ItemRequestControllerTest {
-
     @Mock
     private RequestClient requestClient;
 
     @InjectMocks
     private ItemRequestController itemRequestController;
 
+    private Long userId;
+    private Long requestId;
+    private ItemRequestDto requestDto;
+
     @BeforeEach
-    public void setUp() {
-        MockitoAnnotations.initMocks(this);
+    void setUp() {
+        userId = 1L;
+        requestId = 1L;
+        requestDto = new ItemRequestDto();
     }
 
     @Test
-    public void testGetYourRequests() {
-        Long userId = 1L;
-        ResponseEntity<Object> expectedResponse = ResponseEntity.ok().build();
-
-        when(requestClient.getRequestsByUser(eq(userId))).thenReturn(expectedResponse);
+    void getYourRequests_shouldReturnRequests() {
+        when(requestClient.getRequestsByUser(userId)).thenReturn(ResponseEntity.ok().build());
 
         ResponseEntity<Object> response = itemRequestController.getYourRequests(userId);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
+        verify(requestClient, times(1)).getRequestsByUser(userId);
+        assertEquals(ResponseEntity.ok().build(), response);
     }
 
     @Test
-    public void testAddRequest() {
-        Long userId = 1L;
-        ItemRequestDto requestDto = new ItemRequestDto();
-        ResponseEntity<Object> expectedResponse = ResponseEntity.ok().build();
-
-        when(requestClient.addRequest(eq(requestDto), eq(userId))).thenReturn(expectedResponse);
+    void addRequest_shouldAddRequest() {
+        when(requestClient.addRequest(requestDto, userId)).thenReturn(ResponseEntity.ok().build());
 
         ResponseEntity<Object> response = itemRequestController.addRequest(userId, requestDto);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
+        verify(requestClient, times(1)).addRequest(requestDto, userId);
+        assertEquals(ResponseEntity.ok().build(), response);
     }
 
     @Test
-    public void testGetAllRequests() {
-        Long userId = 1L;
+    void getAllRequests_shouldReturnAllRequests() {
         Integer from = 0;
         Integer size = 10;
-        ResponseEntity<Object> expectedResponse = ResponseEntity.ok().build();
-
-        when(requestClient.getAllRequests(eq(userId), eq(from), eq(size))).thenReturn(expectedResponse);
+        when(requestClient.getAllRequests(userId, from, size)).thenReturn(ResponseEntity.ok().build());
 
         ResponseEntity<Object> response = itemRequestController.getAllRequests(userId, from, size);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
+        verify(requestClient, times(1)).getAllRequests(userId, from, size);
+        assertEquals(ResponseEntity.ok().build(), response);
     }
 
     @Test
-    public void testGetRequestById() {
-        Long userId = 1L;
-        Long requestId = 1L;
-        ResponseEntity<Object> expectedResponse = ResponseEntity.ok().build();
-
-        when(requestClient.getRequestById(eq(requestId), eq(userId))).thenReturn(expectedResponse);
+    void getRequestById_shouldReturnRequest() {
+        when(requestClient.getRequestById(requestId, userId)).thenReturn(ResponseEntity.ok().build());
 
         ResponseEntity<Object> response = itemRequestController.getRequestById(userId, requestId);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
+        verify(requestClient, times(1)).getRequestById(requestId, userId);
+        assertEquals(ResponseEntity.ok().build(), response);
     }
 }

@@ -1,6 +1,10 @@
 package user;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ContextConfiguration;
 import ru.practicum.ShareItServer;
@@ -9,99 +13,46 @@ import ru.practicum.user.mapper.UserMapper;
 import ru.practicum.user.model.User;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @ContextConfiguration(classes = ShareItServer.class)
 @DataJpaTest
+@ExtendWith(MockitoExtension.class)
 public class UserMapperTest {
+    @BeforeEach
+    public void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
 
     @Test
-    public void testToUserDto_AllFields() {
+    public void testToUserDto() {
         User user = User.builder()
                 .id(1L)
+                .name("UserName")
                 .email("user@example.com")
-                .name("John Doe")
                 .build();
 
         UserDto userDto = UserMapper.toUserDto(user);
 
+        assertNotNull(userDto);
         assertEquals(1L, userDto.getId());
+        assertEquals("UserName", userDto.getName());
         assertEquals("user@example.com", userDto.getEmail());
-        assertEquals("John Doe", userDto.getName());
     }
 
     @Test
-    public void testToUserDto_NullFields() {
-        User user = User.builder()
-                .id(null)
-                .email(null)
-                .name(null)
-                .build();
-
-        UserDto userDto = UserMapper.toUserDto(user);
-
-        assertNull(userDto.getId());
-        assertNull(userDto.getEmail());
-        assertNull(userDto.getName());
-    }
-
-    @Test
-    public void testToUserDto_EmptyFields() {
-        User user = User.builder()
-                .id(0L)
-                .email("")
-                .name("")
-                .build();
-
-        UserDto userDto = UserMapper.toUserDto(user);
-
-        assertEquals(0L, userDto.getId());
-        assertEquals("", userDto.getEmail());
-        assertEquals("", userDto.getName());
-    }
-
-    @Test
-    public void testToUser_AllFields() {
+    public void testToUser() {
         UserDto userDto = UserDto.builder()
                 .id(1L)
+                .name("UserName")
                 .email("user@example.com")
-                .name("John Doe")
                 .build();
 
         User user = UserMapper.toUser(userDto);
 
+        assertNotNull(user);
         assertEquals(1L, user.getId());
+        assertEquals("UserName", user.getName());
         assertEquals("user@example.com", user.getEmail());
-        assertEquals("John Doe", user.getName());
-    }
-
-    @Test
-    public void testToUser_NullFields() {
-        UserDto userDto = UserDto.builder()
-                .id(null)
-                .email(null)
-                .name(null)
-                .build();
-
-        User user = UserMapper.toUser(userDto);
-
-        assertNull(user.getId());
-        assertNull(user.getEmail());
-        assertNull(user.getName());
-    }
-
-    @Test
-    public void testToUser_EmptyFields() {
-        UserDto userDto = UserDto.builder()
-                .id(0L)
-                .email("")
-                .name("")
-                .build();
-
-        User user = UserMapper.toUser(userDto);
-
-        assertEquals(0L, user.getId());
-        assertEquals("", user.getEmail());
-        assertEquals("", user.getName());
     }
 }

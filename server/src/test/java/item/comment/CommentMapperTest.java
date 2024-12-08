@@ -42,8 +42,8 @@ public class CommentMapperTest {
 
         author = new User();
         author.setId(1L);
-        author.setName("John Doe");
-        author.setEmail("john.doe@example.com");
+        author.setName("Имя Фамилия");
+        author.setEmail("NAme.111@example.com");
 
         item = new Item();
         item.setId(1L);

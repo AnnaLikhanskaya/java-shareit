@@ -162,7 +162,7 @@ public class BookingServiceDb implements BookingService {
                 .orElseThrow(() -> new NotExsistObject("Невозможно найти бронирование с ID: " + bookingId));
     }
 
-    private void isTheTimeCorrect(BookingInputDto bookingInputDto) {
+    public void isTheTimeCorrect(BookingInputDto bookingInputDto) {
         if (bookingInputDto.getEnd().isBefore(bookingInputDto.getStart())) {
             throw new InvalidRequestException("Конец бронирования не может быть раньше начала");
         }
