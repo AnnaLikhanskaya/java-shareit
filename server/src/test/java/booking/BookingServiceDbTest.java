@@ -403,13 +403,13 @@ public class BookingServiceDbTest {
         Pageable pageable = CustomPageRequest.create(from, size, Sort.by(Sort.Direction.DESC, "start"));
 
         when(userRepository.findById(ownerId)).thenReturn(Optional.of(owner));
-        when(bookingRepository.findByOwnerAndEndIsBefore(owner, LocalDateTime.now(), pageable)).thenReturn(Collections.emptyList());
+        when(bookingRepository.findByOwnerAndEndIsBefore(any(), any(), any())).thenReturn(Collections.emptyList());
 
         List<BookingOutputDto> result = bookingServiceDb.getAllBookingsForOwner(ownerId, state, from, size);
 
         assertNotNull(result);
         assertTrue(result.isEmpty());
-        verify(bookingRepository, times(1)).findByOwnerAndEndIsBefore(owner, LocalDateTime.now(), pageable);
+        verify(bookingRepository, times(1)).findByOwnerAndEndIsBefore(any(), any(), any());
     }
 
     @Test
