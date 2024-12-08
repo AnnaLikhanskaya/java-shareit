@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.practicum.booking.controller.BookingController;
-import ru.practicum.exception.*;
 import ru.practicum.item.controller.ItemController;
 import ru.practicum.user.controller.UserController;
 
@@ -28,59 +27,10 @@ public class ErrorHandler {
         return error;
     }
 
-    @ExceptionHandler(NotExsistObject.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public Map<String, String> handleNotExsistObject(final NotExsistObject e) {
-        Map<String, String> error = Map.of("error", e.getMessage());
-        log.warn("Not found error: {}", e.getMessage());
-        return error;
-    }
-
-    @ExceptionHandler(UserNotFoundException.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public Map<String, String> handleUserNotFoundException(final UserNotFoundException e) {
-        Map<String, String> error = Map.of("error", e.getMessage());
-        log.warn("User not found error: {}", e.getMessage());
-        return error;
-    }
-
-    @ExceptionHandler(DuplicateException.class)
-    @ResponseStatus(HttpStatus.CONFLICT)
-    public Map<String, String> handleDuplicateException(final DuplicateException e) {
-        Map<String, String> error = Map.of("error", e.getMessage());
-        log.warn("Conflict error: {}", e.getMessage());
-        return error;
-    }
-
-
-    @ExceptionHandler()
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, String> handle(final InvalidRequestException e) {
-        Map<String, String> error = Map.of("error", e.getMessage());
-        log.warn(e.getMessage());
-        return error;
-    }
-
-    @ExceptionHandler()
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public Map<String, String> handle(final OtherDataException e) {
-        Map<String, String> error = Map.of("error", e.getMessage());
-        log.warn(e.getMessage());
-        return error;
-    }
-
     @ExceptionHandler()
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Map<String, String> handle(final IllegalArgumentException e) {
         Map<String, String> error = Map.of("error", "Unknown state: UNSUPPORTED_STATUS");
-        log.warn(e.getMessage());
-        return error;
-    }
-
-    @ExceptionHandler()
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public Map<String, String> handle(final ItemUnavalibleException e) {
-        Map<String, String> error = Map.of("error", e.getMessage());
         log.warn(e.getMessage());
         return error;
     }

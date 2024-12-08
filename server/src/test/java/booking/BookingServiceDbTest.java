@@ -34,6 +34,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static ru.practicum.booking.dto.BookingState.INCORRECT;
 
 @ContextConfiguration(classes = ShareItServer.class)
 @SpringBootTest
@@ -411,29 +412,49 @@ public class BookingServiceDbTest {
         verify(bookingRepository, times(1)).findByOwnerAndEndIsBefore(owner, LocalDateTime.now(), pageable);
     }
 
-//    @Test
-//    public void testGetAllBookingsForOwner_FUTURE() {
-//        Long ownerId = 1L;
-//        BookingState state = BookingState.FUTURE;
-//        Integer from = 0;
-//        Integer size = 10;
-//        User owner = new User();
-//        owner.setId(ownerId);
-//        Pageable pageable = CustomPageRequest.create(from, size, Sort.by(Sort.Direction.DESC, "start"));
-//
-//        // Фиксированное время
-//        LocalDateTime fixedTime = LocalDateTime.of(2024, 12, 8, 15, 10, 44, 940848500);
-//
-//        when(userRepository.findById(ownerId)).thenReturn(Optional.of(owner));
-//        when(bookingRepository.findByOwnerAndStartIsAfter(owner, fixedTime, pageable)).thenReturn(Collections.emptyList());
-//
-//        // Используем фиксированное время в методе
-//        List<BookingOutputDto> result = bookingServiceDb.getAllBookingsForOwner(ownerId, state, from, size);
-//
-//        assertNotNull(result);
-//        assertTrue(result.isEmpty());
-//        verify(bookingRepository, times(1)).findByOwnerAndStartIsAfter(owner, fixedTime, pageable);
-//    }
+    @Test
+    public void testGetAllBookings_Incorrect() {
+        Long ownerId = 1L;
+        Integer from = 0;
+        Integer size = 10;
+        when(userRepository.findById(ownerId)).thenReturn(Optional.of(User.builder().id(1L).build()));
+
+        assertThrows(UnknownStateException.class,
+                () -> bookingServiceDb.getAllBookings(ownerId, INCORRECT, from, size));
+    }
+
+    @Test
+    public void testGetAllBookingsForOwner_Incorrect() {
+        Long ownerId = 1L;
+        Integer from = 0;
+        Integer size = 10;
+        when(userRepository.findById(ownerId)).thenReturn(Optional.of(User.builder().id(1L).build()));
+
+        assertThrows(UnknownStateException.class,
+                () -> bookingServiceDb.getAllBookingsForOwner(ownerId, INCORRECT, from, size));
+    }
+
+    @Test
+    public void testGetAllBookingsForOwner_FUTURE() {
+        Long ownerId = 1L;
+        BookingState state = BookingState.FUTURE;
+        Integer from = 0;
+        Integer size = 10;
+        User owner = new User();
+        owner.setId(ownerId);
+        Pageable pageable = CustomPageRequest.create(from, size, Sort.by(Sort.Direction.DESC, "start"));
+
+        // Фиксированное время
+        when(userRepository.findById(ownerId)).thenReturn(Optional.of(owner));
+        when(bookingRepository.findByOwnerAndStartIsAfter(any(), any(), any())).thenReturn(List.of());
+
+        // Используем фиксированное время в методе
+        List<BookingOutputDto> result = bookingServiceDb.getAllBookingsForOwner(ownerId, state, from, size);
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        verify(bookingRepository, times(1)).findByOwnerAndStartIsAfter(any(), any(), any());
+    }
 
     @Test
     public void testGetAllBookingsForOwner_WAITING() {

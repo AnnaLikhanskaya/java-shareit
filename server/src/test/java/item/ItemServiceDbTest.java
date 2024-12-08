@@ -29,7 +29,6 @@ import ru.practicum.request.storage.ItemRequestRepository;
 import ru.practicum.user.mapper.UserMapper;
 import ru.practicum.user.model.User;
 import ru.practicum.user.storage.UserRepository;
-import org.springframework.data.domain.Sort;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -185,8 +184,8 @@ public class ItemServiceDbTest {
     public void testGetItemById_Owner() {
         when(itemRepository.findById(1L)).thenReturn(Optional.of(item));
         when(commentRepository.findByItemId(1L)).thenReturn(Collections.emptyList());
-        when(bookingRepository.findByItemAndEndIsBefore(item, LocalDateTime.now())).thenReturn(List.of(pastBooking));
-        when(bookingRepository.findByItemAndStartIsAfter(item, LocalDateTime.now())).thenReturn(List.of(futureBooking));
+        when(bookingRepository.findByItemAndEndIsBefore(any(), any())).thenReturn(List.of(pastBooking));
+        when(bookingRepository.findByItemAndStartIsAfter(any(), any())).thenReturn(List.of(futureBooking));
 
         ItemDto result = itemServiceDb.getItemById(1L, 3L);
 

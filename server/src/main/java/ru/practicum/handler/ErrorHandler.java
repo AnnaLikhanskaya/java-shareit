@@ -77,15 +77,6 @@ public class ErrorHandler {
         return error;
     }
 
-    @ExceptionHandler()
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public Map<String, String> handle(final ItemUnavalibleException e) {
-        Map<String, String> error = Map.of("error", e.getMessage());
-        log.warn(e.getMessage());
-        return error;
-    }
-
-
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public Map<String, String> handleException(final Exception e) {
