@@ -6,6 +6,7 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 import ru.practicum.client.BaseClient;
 import ru.practicum.item.dto.CommentDto;
@@ -27,6 +28,10 @@ public class ItemClient extends BaseClient {
                         .requestFactory(() -> new HttpComponentsClientHttpRequestFactory())
                         .build()
         );
+    }
+
+    public ItemClient(RestTemplate rest) {
+        super(rest);
     }
 
     public ResponseEntity<Object> creatItem(long userId, ItemDto itemDto) {

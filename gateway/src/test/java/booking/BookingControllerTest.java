@@ -1,14 +1,14 @@
 package booking;
 
+import conf.TestConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.ContextConfiguration;
 import ru.practicum.ShareItGateway;
 import ru.practicum.booking.client.BookingClient;
 import ru.practicum.booking.controller.BookingController;
@@ -18,15 +18,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
-
-@AutoConfigureMockMvc
-@ContextConfiguration(classes = ShareItGateway.class)
+@SpringBootTest(classes = {ShareItGateway.class, TestConfig.class})
 public class BookingControllerTest {
 
-    @Mock
+    @MockBean
     private BookingClient bookingClient;
 
-    @InjectMocks
+    @Autowired
     private BookingController bookingController;
 
     @BeforeEach

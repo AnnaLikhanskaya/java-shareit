@@ -28,9 +28,7 @@ public class BaseClientTest {
     @Test
     void testGet() {
         ResponseEntity<Object> responseEntity = new ResponseEntity<>(HttpStatus.OK);
-        when(restTemplate.exchange(any(String.class), eq(HttpMethod.GET), any(HttpEntity.class),
-                eq(Object.class)))
-                .thenReturn(responseEntity);
+        when(restTemplate.exchange(any(String.class), eq(HttpMethod.GET), any(HttpEntity.class), eq(Object.class))).thenReturn(responseEntity);
 
         ResponseEntity<Object> result = baseClient.get();
 
@@ -41,9 +39,7 @@ public class BaseClientTest {
     @Test
     void testGetWithUserId() {
         ResponseEntity<Object> responseEntity = new ResponseEntity<>(HttpStatus.OK);
-        when(restTemplate.exchange(any(String.class), eq(HttpMethod.GET), any(HttpEntity.class),
-                eq(Object.class)))
-                .thenReturn(responseEntity);
+        when(restTemplate.exchange(any(String.class), eq(HttpMethod.GET), any(HttpEntity.class), eq(Object.class))).thenReturn(responseEntity);
 
         ResponseEntity<Object> result = baseClient.get(1L);
 
@@ -53,10 +49,7 @@ public class BaseClientTest {
     @Test
     void testGetWithPathAndUserId() {
         ResponseEntity<Object> responseEntity = new ResponseEntity<>(HttpStatus.OK);
-        when(restTemplate.exchange(any(String.class), eq(HttpMethod.GET), any(HttpEntity.class),
-                eq(Object.class)))
-                .thenReturn(responseEntity);
-
+        when(restTemplate.exchange(any(String.class), eq(HttpMethod.GET), any(HttpEntity.class), eq(Object.class))).thenReturn(responseEntity);
         ResponseEntity<Object> result = baseClient.get("/items", 1L);
 
         assertThat(result).isEqualTo(responseEntity);
@@ -65,9 +58,7 @@ public class BaseClientTest {
     @Test
     void testPost() {
         ResponseEntity<Object> responseEntity = new ResponseEntity<>(HttpStatus.CREATED);
-        when(restTemplate.exchange(any(String.class), eq(HttpMethod.POST), any(HttpEntity.class),
-                eq(Object.class)))
-                .thenReturn(responseEntity);
+        when(restTemplate.exchange(any(String.class), eq(HttpMethod.POST), any(HttpEntity.class), eq(Object.class))).thenReturn(responseEntity);
 
         ResponseEntity<Object> result = baseClient.post("/items", 1L, new Object());
 
@@ -77,8 +68,7 @@ public class BaseClientTest {
     @Test
     void testPatch() {
         ResponseEntity<Object> responseEntity = new ResponseEntity<>(HttpStatus.OK);
-        when(restTemplate.exchange(any(String.class), eq(HttpMethod.PATCH), any(HttpEntity.class), eq(Object.class)))
-                .thenReturn(responseEntity);
+        when(restTemplate.exchange(any(String.class), eq(HttpMethod.PATCH), any(HttpEntity.class), eq(Object.class))).thenReturn(responseEntity);
 
         ResponseEntity<Object> result = baseClient.patch("/items", 1L, new Object());
 
@@ -88,9 +78,7 @@ public class BaseClientTest {
     @Test
     void testDelete() {
         ResponseEntity<Object> responseEntity = new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        when(restTemplate.exchange(any(String.class), eq(HttpMethod.DELETE), any(HttpEntity.class),
-                eq(Object.class)))
-                .thenReturn(responseEntity);
+        when(restTemplate.exchange(any(String.class), eq(HttpMethod.DELETE), any(HttpEntity.class), eq(Object.class))).thenReturn(responseEntity);
 
         ResponseEntity<Object> result = baseClient.delete("/items", 1L);
 
