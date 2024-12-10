@@ -91,8 +91,7 @@ public class ItemRequestServiceImplTest {
 
         when(userRepository.findById(eq(userId))).thenReturn(Optional.of(user));
         when(requestRepository.findById(eq(requestId))).thenReturn(Optional.of(itemRequest));
-        when(itemRepository.findByRequest(eq(itemRequest))).thenReturn(Arrays.asList(
-        ));
+        when(itemRepository.findByRequest(eq(itemRequest))).thenReturn(Arrays.asList());
 
         ItemRequestDto result = itemRequestService.getRequestById(requestId, userId);
 
@@ -132,8 +131,7 @@ public class ItemRequestServiceImplTest {
 
         when(userRepository.findById(eq(userId))).thenReturn(Optional.of(user));
         when(requestRepository.findByRequestorNot(eq(user), any())).thenReturn(itemRequests);
-        when(itemRepository.findByRequest(any(ItemRequest.class))).thenReturn(Arrays.asList(
-        ));
+        when(itemRepository.findByRequestIds(any())).thenReturn(Arrays.asList());
 
         List<ItemRequestDto> result = itemRequestService.getAllRequests(userId, from, size);
 
@@ -170,8 +168,7 @@ public class ItemRequestServiceImplTest {
 
         when(userRepository.findById(eq(userId))).thenReturn(Optional.of(user));
         when(requestRepository.findByRequestor(eq(user))).thenReturn(itemRequests);
-        when(itemRepository.findByRequest(any(ItemRequest.class))).thenReturn(Arrays.asList(
-                // Mock items here
+        when(itemRepository.findByRequestIds(any())).thenReturn(Arrays.asList(
         ));
 
         List<ItemRequestDto> result = itemRequestService.getRequestsByUser(userId);

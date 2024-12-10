@@ -25,4 +25,8 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
     List<Item> search(@Param("text") String text, Pageable pageable);
 
     List<Item> findByRequest(ItemRequest itemRequest);
+
+    @Query("select i from Item i where i.request.id in :requestIds")
+    List<Item> findByRequestIds(@Param("requestIds") List<Long> requestIds);  //добавила
+
 }

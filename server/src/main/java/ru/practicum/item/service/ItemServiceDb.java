@@ -57,12 +57,18 @@ public class ItemServiceDb implements ItemService, CommentService {
 
     @Override
     public List<ItemDto> getItemByText(String text, Integer from, Integer size) {
-        log.info("Получен запрос на поиск вещи по названию или описанию");
+        log.info("Получен запрос на поиск вещи по названию или описанию", text);
         Pageable pageable = CustomPageRequest.create(from, size, Sort.by(Sort.Direction.ASC, "id"));
         if (text.isBlank()) {
+            log.warn("Текст запроса пуст. Пустой список.");
             return new ArrayList<>();
         }
-        return itemRepository.search(text.toLowerCase(), pageable).stream()
+        List<Item> items = itemRepository.search(text.toLowerCase(), pageable);
+        if (items.isEmpty()) {
+            log.warn("Не удалось найти предметы по запросу с текстом: {}", text);
+            return new ArrayList<>();
+        }
+        return items.stream()
                 .filter(Item::getAvailable)
                 .map(item -> ItemMapper.toItemDto(item, getComments(item.getId())))
                 .collect(Collectors.toList());
